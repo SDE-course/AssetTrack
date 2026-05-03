@@ -1,0 +1,59 @@
+/* =========================
+   OS files
+========================= */
+.DS_Store
+Thumbs.db
+
+/* =========================
+   Backend (Spring Boot / Java)
+========================= */
+backend/target/
+*.log
+
+# Maven / Gradle
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/build/
+backend/out/
+
+# IntelliJ / Eclipse / VSCode
+backend/.idea/
+backend/*.iml
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Java compiled files
+*.class
+
+/* =========================
+   Frontend (React)
+========================= */
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+/* =========================
+   Misc
+========================= */
+*.swp
+*.swo
+*.tmp
+
+/* =========================
+   Environment files
+========================= */
+
+.env
+.env.*
+!.env.example
