@@ -1,26 +1,3 @@
-# backend build
-/backend/target/
-/backend/build/
-/backend/out/
-
-# IDE
-.idea/
-*.iml
-.classpath
-.project
-.settings/
-
-# maven wrapper (optional but common)
-mvnw
-mvnw.cmd
-.mvn/
-
-# logs
-*.log
-
-# env
-.env
-.env.*
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
