@@ -1,0 +1,121 @@
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.example:assesttrack >-----------------------
+[INFO] Building  0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ assesttrack ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ assesttrack ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 28 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ assesttrack ---
+[INFO] skip non existing resourceDirectory C:\Users\LENOVO\Documents\Assest_Track\backend\assesttrack\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ assesttrack ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 17] to target\test-classes
+[WARNING] /C:/Users/LENOVO/Documents/Assest_Track/backend/assesttrack/src/test/java/com/assettrack/allocation/controller/AllocationControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /C:/Users/LENOVO/Documents/Assest_Track/backend/assesttrack/src/test/java/com/assettrack/allocation/controller/AllocationControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /C:/Users/LENOVO/Documents/Assest_Track/backend/assesttrack/src/test/java/com/assettrack/allocation/controller/AllocationControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /C:/Users/LENOVO/Documents/Assest_Track/backend/assesttrack/src/test/java/com/assettrack/allocation/controller/AllocationControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /C:/Users/LENOVO/Documents/Assest_Track/backend/assesttrack/src/test/java/com/assettrack/allocation/controller/AllocationControllerTest.java:[38,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 
+[INFO] --- surefire:3.5.5:test (default-test) @ assesttrack ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+[INFO] Running com.assettrack.allocation.controller.AllocationControllerTest
+18:54:15.019 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.assettrack.allocation.controller.AllocationControllerTest]: AllocationControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:54:15.156 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.assettrack.AssesttrackApplication for test class com.assettrack.allocation.controller.AllocationControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.14)
+
+2026-05-08T18:54:15.510+03:00  INFO 153928 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : Starting AllocationControllerTest using Java 17.0.18 with PID 153928 (started by LENOVO in C:\Users\LENOVO\Documents\Assest_Track\backend\assesttrack)
+2026-05-08T18:54:15.511+03:00  INFO 153928 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : No active profile set, falling back to 1 default profile: "default"
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-05-08T18:54:17.897+03:00  WARN 153928 --- [assesttrack] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 81e5143b-aada-4f61-b0ea-54fbc6c9ef5f
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-05-08T18:54:17.917+03:00  INFO 153928 --- [assesttrack] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-05-08T18:54:18.169+03:00  INFO 153928 --- [assesttrack] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-05-08T18:54:18.169+03:00  INFO 153928 --- [assesttrack] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-05-08T18:54:18.171+03:00  INFO 153928 --- [assesttrack] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-05-08T18:54:18.203+03:00  INFO 153928 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : Started AllocationControllerTest in 2.985 seconds (process running for 3.769)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.961 s -- in com.assettrack.allocation.controller.AllocationControllerTest
+[INFO] Running com.assettrack.allocation.service.AllocationServiceImplTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.137 s -- in com.assettrack.allocation.service.AllocationServiceImplTest
+[INFO] Running com.assettrack.AssesttrackApplicationTests
+2026-05-08T18:54:23.135+03:00  INFO 153928 --- [assesttrack] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.assettrack.AssesttrackApplicationTests]: AssesttrackApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-08T18:54:23.655+03:00  INFO 153928 --- [assesttrack] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.assettrack.AssesttrackApplication for test class com.assettrack.AssesttrackApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.14)
+
+2026-05-08T18:54:24.174+03:00  INFO 153928 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : Starting AssesttrackApplicationTests using Java 17.0.18 with PID 153928 (started by LENOVO in C:\Users\LENOVO\Documents\Assest_Track\backend\assesttrack)
+2026-05-08T18:54:24.180+03:00  INFO 153928 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : No active profile set, falling back to 1 default profile: "default"
+2026-05-08T18:54:26.158+03:00  INFO 153928 --- [assesttrack] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-08T18:54:26.414+03:00  INFO 153928 --- [assesttrack] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 203 ms. Found 3 JPA repository interfaces.
+2026-05-08T18:54:27.787+03:00  INFO 153928 --- [assesttrack] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-08T18:54:27.899+03:00  INFO 153928 --- [assesttrack] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.49.Final
+2026-05-08T18:54:27.969+03:00  INFO 153928 --- [assesttrack] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-08T18:54:28.283+03:00  INFO 153928 --- [assesttrack] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-08T18:54:28.361+03:00  INFO 153928 --- [assesttrack] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-08T18:54:31.808+03:00  INFO 153928 --- [assesttrack] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4d305059
+2026-05-08T18:54:31.821+03:00  INFO 153928 --- [assesttrack] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-08T18:54:32.098+03:00  WARN 153928 --- [assesttrack] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-08T18:54:34.333+03:00  INFO 153928 --- [assesttrack] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 15.16
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-08T18:54:36.027+03:00  INFO 153928 --- [assesttrack] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-08T18:54:42.177+03:00  INFO 153928 --- [assesttrack] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-08T18:54:43.406+03:00  INFO 153928 --- [assesttrack] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-08T18:54:44.317+03:00  WARN 153928 --- [assesttrack] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 3169badc-7a04-404c-a297-89daa8ba2b0a
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-05-08T18:54:44.318+03:00  INFO 153928 --- [assesttrack] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-05-08T18:54:44.377+03:00  INFO 153928 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : Started AssesttrackApplicationTests in 20.621 seconds (process running for 29.942)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.30 s -- in com.assettrack.AssesttrackApplicationTests
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  ٣٦.٦٠٢ s
+[INFO] Finished at: ٢٠٢٦-٠٥-٠٨T١٨:٥٤:٤٦+03:00
+[INFO] ------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 package com.assettrack.allocation.exception;
 
 import com.assettrack.allocation.dto.MessageResponse;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,6 +31,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<MessageResponse> handleAlreadyAssigned(AssetAlreadyAssignedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new MessageResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<MessageResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new MessageResponse("Access denied"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
