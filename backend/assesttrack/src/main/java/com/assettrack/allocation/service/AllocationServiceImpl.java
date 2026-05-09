@@ -30,7 +30,7 @@ public class AllocationServiceImpl implements AllocationService {
     public MessageResponse assignAsset(AssignAssetRequest request, String performedByEmail) {
 
         // Resolve asset
-        Asset asset = assetRepository.findById(request.getAssetId())
+        Asset asset = assetRepository.findByIdForUpdate(request.getAssetId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Asset not found with id: " + request.getAssetId()));
 

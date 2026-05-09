@@ -1,8 +1,8 @@
-package com.assettrack.usermanagement.controller;
+package com.assettrack.allocation.controller;
 
-import com.assettrack.usermanagement.domain.Role;
-import com.assettrack.usermanagement.dto.UserDTOs.*;
-import com.assettrack.usermanagement.service.UserService;
+import com.assettrack.allocation.entity.Role;
+import com.assettrack.allocation.dto.UserDTO.*;
+import com.assettrack.allocation.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

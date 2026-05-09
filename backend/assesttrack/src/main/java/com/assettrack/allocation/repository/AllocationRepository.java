@@ -37,4 +37,6 @@ public interface AllocationRepository extends JpaRepository<Allocation, Long> {
      * All active allocations for a specific user.
      */
     List<Allocation> findByAssignedToIdAndActiveTrue(Long userId);
+
+    boolean existsByAssignedToIdAndActiveTrue(Long userId);
 }

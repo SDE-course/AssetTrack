@@ -1,7 +1,7 @@
-package com.assettrack.usermanagement.repository;
+package com.assettrack.allocation.repository;
 
-import com.assettrack.usermanagement.domain.Role;
-import com.assettrack.usermanagement.domain.User;
+import com.assettrack.allocation.entity.Role;
+import com.assettrack.allocation.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,5 +13,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     List<User> findByRole(Role role);
-    List<User> findByActiveTrue();
 }

@@ -81,7 +81,7 @@ class AllocationServiceImplTest {
         req.setUserId(2L);
         req.setNotes("Test note");
 
-        when(assetRepository.findById(10L)).thenReturn(Optional.of(availableAsset));
+        when(assetRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(availableAsset));
         when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
         when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
         when(allocationRepository.existsByAssetIdAndActiveTrue(10L)).thenReturn(false);
@@ -100,7 +100,7 @@ class AllocationServiceImplTest {
         req.setAssetId(11L);
         req.setUserId(2L);
 
-        when(assetRepository.findById(11L)).thenReturn(Optional.of(assignedAsset));
+        when(assetRepository.findByIdForUpdate(11L)).thenReturn(Optional.of(assignedAsset));
         when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
         when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
 
@@ -116,7 +116,7 @@ class AllocationServiceImplTest {
         req.setAssetId(12L);
         req.setUserId(2L);
 
-        when(assetRepository.findById(12L)).thenReturn(Optional.of(expiredAsset));
+        when(assetRepository.findByIdForUpdate(12L)).thenReturn(Optional.of(expiredAsset));
         when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
         when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
 
@@ -132,7 +132,7 @@ class AllocationServiceImplTest {
         req.setAssetId(999L);
         req.setUserId(2L);
 
-        when(assetRepository.findById(999L)).thenReturn(Optional.empty());
+        when(assetRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -146,7 +146,7 @@ class AllocationServiceImplTest {
         req.setAssetId(10L);
         req.setUserId(999L);
 
-        when(assetRepository.findById(10L)).thenReturn(Optional.of(availableAsset));
+        when(assetRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(availableAsset));
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))

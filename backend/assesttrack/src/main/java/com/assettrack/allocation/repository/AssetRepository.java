@@ -2,7 +2,9 @@ package com.assettrack.allocation.repository;
 
 import com.assettrack.allocation.entity.Asset;
 import com.assettrack.allocation.entity.AssetStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,6 +13,10 @@ import java.util.List;
 
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Asset a WHERE a.id = :id")
+    java.util.Optional<Asset> findByIdForUpdate(@Param("id") Long id);
 
     /**
      * Spare laptop query with optional brand / RAM / storage filters.

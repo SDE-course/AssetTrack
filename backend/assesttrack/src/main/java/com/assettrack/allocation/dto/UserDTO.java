@@ -1,6 +1,6 @@
-package com.assettrack.usermanagement.dto;
+package com.assettrack.allocation.dto;
 
-import com.assettrack.usermanagement.domain.Role;
+import com.assettrack.allocation.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,20 +8,17 @@ import lombok.Data;
 
 // ─── Request DTOs ───────────────────────────────────────────────
 
-public class UserDTOs {
+public class UserDTO {
 
     /** Used by Admin to create a user manually (not via signup) */
     @Data
     public static class CreateUserRequest {
         @NotBlank
-        private String fullName;
+        private String name;
 
         @Email
         @NotBlank
         private String email;
-
-        @NotBlank
-        private String password;
 
         @NotNull
         private Role role;
@@ -30,7 +27,7 @@ public class UserDTOs {
     /** Used by Admin to update user info */
     @Data
     public static class UpdateUserRequest {
-        private String fullName;
+        private String name;
         private String email;
     }
 
@@ -47,9 +44,8 @@ public class UserDTOs {
     @Data
     public static class UserResponse {
         private Long id;
-        private String fullName;
+        private String name;
         private String email;
         private Role role;
-        private boolean active;
     }
 }
