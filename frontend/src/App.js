@@ -6,6 +6,7 @@ import Notifications from './pages/users/Notifications';
 import Reports from './pages/users/Reports';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AssetAllocationConsole from './components/allocation/AssetAllocationConsole';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/reports" element={<Reports />} />
+      <Route path="/allocation" element={<AssetAllocationConsole />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
