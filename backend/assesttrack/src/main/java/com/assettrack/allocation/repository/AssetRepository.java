@@ -35,4 +35,24 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     );
 
     List<Asset> findByStatus(AssetStatus status);
+
+    /**
+     * Dynamic filter query. Any null parameter is ignored.
+     * - assignedUser: matches active allocation's assignedTo name or email (partial, case-insensitive)
+     */
+    @Query("SELECT DISTINCT a FROM Asset a " +
+           "LEFT JOIN a.allocations alloc " +
+           "LEFT JOIN alloc.assignedTo u " +
+           "WHERE (:serialNumber IS NULL OR LOWER(a.serialNumber) LIKE CONCAT('%', LOWER(:serialNumber), '%')) " +
+           "AND (:status IS NULL OR a.status = :status) " +
+           "AND (:type IS NULL OR LOWER(a.type) = LOWER(:type)) " +
+           "AND (:brand IS NULL OR LOWER(a.brand) = LOWER(:brand)) " +
+           "AND (:assignedUser IS NULL OR (alloc IS NOT NULL AND alloc.active = true AND (LOWER(u.name) LIKE CONCAT('%', LOWER(:assignedUser), '%') OR LOWER(u.email) LIKE CONCAT('%', LOWER(:assignedUser), '%'))))")
+    List<Asset> findByFilters(
+            @Param("serialNumber") String serialNumber,
+            @Param("assignedUser") String assignedUser,
+            @Param("status") AssetStatus status,
+            @Param("type") String type,
+            @Param("brand") String brand
+    );
 }
