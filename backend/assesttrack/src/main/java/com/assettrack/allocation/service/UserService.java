@@ -1,13 +1,14 @@
 package com.assettrack.allocation.service;
 
+import com.assettrack.allocation.dto.UserDTO.*;
 import com.assettrack.allocation.entity.Role;
 import com.assettrack.allocation.entity.User;
-import com.assettrack.allocation.dto.UserDTO.*;
 import com.assettrack.allocation.exception.BadRequestException;
 import com.assettrack.allocation.exception.ResourceNotFoundException;
 import com.assettrack.allocation.repository.AllocationRepository;
 import com.assettrack.allocation.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +19,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AllocationRepository allocationRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // ─── Helpers ────────────────────────────────────────────────────────
+    // ─── Helpers ─────────────────────────────────────────────────────────
 
     private User findOrThrow(Long id) {
         return userRepository.findById(id)
@@ -35,7 +37,7 @@ public class UserService {
         return res;
     }
 
-    // ─── Get All Users ───────────────────────────────────────────────────
+    // ─── Get All Users ────────────────────────────────────────────────────
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
@@ -44,29 +46,47 @@ public class UserService {
                 .toList();
     }
 
-    // ─── Get User By ID ──────────────────────────────────────────────────
+    // ─── Get User By ID ───────────────────────────────────────────────────
 
     public UserResponse getUserById(Long id) {
         return toResponse(findOrThrow(id));
     }
 
-    // ─── Create User (Admin only) ─────────────────────────────────────────
+    // ─── Get Users By Role ────────────────────────────────────────────────
 
+    public List<UserResponse> getUsersByRole(Role role) {
+        return userRepository.findByRole(role)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    // ─── Create User (Admin only) ──────────────────────────────────────────
+
+    /**
+     * Admin-initiated user creation.
+     * A temporary password is generated and hashed; in production you would
+     * send this (or a reset link) to the user via email.
+     */
     public UserResponse createUser(CreateUserRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new BadRequestException("Email already in use: " + req.getEmail());
         }
 
+        // Generate a secure temporary password (admin should share out-of-band)
+        String temporaryPassword = passwordEncoder.encode(java.util.UUID.randomUUID().toString());
+
         User user = User.builder()
-            .name(req.getName())
+                .name(req.getName())
                 .email(req.getEmail())
+                .password(temporaryPassword)
                 .role(req.getRole())
                 .build();
 
         return toResponse(userRepository.save(user));
     }
 
-    // ─── Update User Info ────────────────────────────────────────────────
+    // ─── Update User Info ─────────────────────────────────────────────────
 
     public UserResponse updateUser(Long id, UpdateUserRequest req) {
         User user = findOrThrow(id);
@@ -75,7 +95,8 @@ public class UserService {
             user.setName(req.getName());
         }
         if (req.getEmail() != null && !req.getEmail().isBlank()) {
-            if (!req.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(req.getEmail())) {
+            if (!req.getEmail().equals(user.getEmail())
+                    && userRepository.existsByEmail(req.getEmail())) {
                 throw new BadRequestException("Email already in use: " + req.getEmail());
             }
             user.setEmail(req.getEmail());
@@ -84,7 +105,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    // ─── Change Role ─────────────────────────────────────────────────────
+    // ─── Change Role ──────────────────────────────────────────────────────
 
     public UserResponse changeRole(Long id, ChangeRoleRequest req) {
         User user = findOrThrow(id);
@@ -92,7 +113,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    // ─── Soft Delete (deactivate) ─────────────────────────────────────────
+    // ─── Delete User ──────────────────────────────────────────────────────
 
     public void deleteUser(Long id) {
         User user = findOrThrow(id);
@@ -100,14 +121,5 @@ public class UserService {
             throw new BadRequestException("Cannot delete user with active asset allocations");
         }
         userRepository.delete(user);
-    }
-
-    // ─── Get Users by Role ────────────────────────────────────────────────
-
-    public List<UserResponse> getUsersByRole(Role role) {
-        return userRepository.findByRole(role)
-                .stream()
-                .map(this::toResponse)
-                .toList();
     }
 }
