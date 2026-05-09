@@ -1,5 +1,6 @@
 package com.assettrack.allocation.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,7 +8,10 @@ import lombok.Data;
 @Builder
 public class AssetResponse {
     private Long id;
+
+    @JsonProperty("model")
     private String name;
+
     private String serialNumber;
     private String brand;
     private String type;

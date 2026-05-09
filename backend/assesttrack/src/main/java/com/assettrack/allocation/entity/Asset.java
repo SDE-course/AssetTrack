@@ -3,6 +3,7 @@ package com.assettrack.allocation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -19,7 +20,7 @@ public class Asset {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String name; // كان model → خليناه name
 
     @Column(nullable = false, unique = true)
     private String serialNumber;
@@ -28,9 +29,12 @@ public class Asset {
 
     private String type;
 
-    // Extra fields used by spare-laptop filter
-    private Integer ram;      // in GB
-    private Integer storage;  // in GB
+    private LocalDate purchaseDate;
+
+    private LocalDate warrantyExpiryDate;
+
+    private Integer ram;
+    private Integer storage;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

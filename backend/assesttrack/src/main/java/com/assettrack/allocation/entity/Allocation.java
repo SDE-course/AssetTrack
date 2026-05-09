@@ -1,5 +1,6 @@
 package com.assettrack.allocation.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,12 +8,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-    name = "allocations",
-    indexes = {
-        @Index(name = "idx_allocation_asset",  columnList = "asset_id"),
-        @Index(name = "idx_allocation_user",   columnList = "assigned_to_id"),
-        @Index(name = "idx_allocation_active", columnList = "active")
-    }
+        name = "allocations",
+        indexes = {
+                @Index(name = "idx_allocation_asset", columnList = "asset_id"),
+                @Index(name = "idx_allocation_user", columnList = "assigned_to_id"),
+                @Index(name = "idx_allocation_active", columnList = "active")
+        }
 )
 @Getter
 @Setter
@@ -25,17 +26,17 @@ public class Allocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // The asset being allocated
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asset_id", nullable = false)
     private Asset asset;
 
-    // The user who received the asset
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to_id", nullable = false)
     private User assignedTo;
 
-    // The admin/manager who performed the assignment
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_by_id", nullable = false)
     private User assignedBy;
@@ -43,10 +44,8 @@ public class Allocation {
     @Column(nullable = false)
     private LocalDateTime assignedDate;
 
-    // Null until the asset is returned
     private LocalDateTime returnedDate;
 
-    // Only ONE allocation per asset can be active = true
     @Column(nullable = false)
     private boolean active;
 
