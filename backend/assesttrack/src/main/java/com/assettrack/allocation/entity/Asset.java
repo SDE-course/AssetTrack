@@ -27,7 +27,7 @@ public class Asset {
 
     private String brand;
 
-    @Enumerated(EnumType.STRING)
+    @jakarta.persistence.Convert(converter = AssetTypeConverter.class)
     @Column(nullable = false)
     private AssetType type;
 

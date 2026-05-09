@@ -44,10 +44,10 @@ public class ReportsServiceImpl implements ReportsService {
 
 		// Allocations by asset type
 		Map<String, Long> allocationsByType = allAssets.stream()
-				.collect(Collectors.groupingBy(
-						asset -> asset.getType() != null ? asset.getType() : "Unknown",
-						Collectors.counting()
-				));
+			.collect(Collectors.groupingBy(
+				asset -> asset.getType() != null ? asset.getType().name() : "Unknown",
+				Collectors.counting()
+			));
 
 		// Allocations by user (assigned to)
 		Map<String, Long> allocationsByUser = allAllocations.stream()
@@ -63,12 +63,12 @@ public class ReportsServiceImpl implements ReportsService {
 
 		List<AssetUsageDTO> topUsedAssets = allAssets.stream()
 				.map(asset -> AssetUsageDTO.builder()
-						.assetTag(asset.getSerialNumber())
-						.assetName(asset.getName())
-						.assetType(asset.getType())
-						.allocationCount(assetAllocationCount.getOrDefault(asset.getId(), 0L))
-						.currentStatus(asset.getStatus() != null ? asset.getStatus().toString() : "Unknown")
-						.build())
+					.assetTag(asset.getSerialNumber())
+					.assetName(asset.getName())
+					.assetType(asset.getType() != null ? asset.getType().name() : "Unknown")
+					.allocationCount(assetAllocationCount.getOrDefault(asset.getId(), 0L))
+					.currentStatus(asset.getStatus() != null ? asset.getStatus().toString() : "Unknown")
+					.build())
 				.sorted((a, b) -> Long.compare(b.getAllocationCount(), a.getAllocationCount()))
 				.limit(10)
 				.collect(Collectors.toList());

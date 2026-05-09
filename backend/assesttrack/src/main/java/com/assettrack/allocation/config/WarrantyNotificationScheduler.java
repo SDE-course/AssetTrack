@@ -84,13 +84,13 @@ public class WarrantyNotificationScheduler {
 		}
 
 		Map<String, Long> stockByType = assetRepository.findAll().stream()
-				.filter(asset -> asset.getType() != null)
-				.filter(asset -> monitoredTypes.contains(asset.getType().trim().toLowerCase(Locale.ROOT)))
-				.filter(asset -> asset.getStatus() == AssetStatus.AVAILABLE)
-				.collect(Collectors.groupingBy(
-						asset -> asset.getType().trim().toLowerCase(Locale.ROOT),
-						Collectors.counting()
-				));
+			.filter(asset -> asset.getType() != null)
+			.filter(asset -> monitoredTypes.contains(asset.getType().name().toLowerCase(Locale.ROOT)))
+			.filter(asset -> asset.getStatus() == AssetStatus.AVAILABLE)
+			.collect(Collectors.groupingBy(
+				asset -> asset.getType().name().toLowerCase(Locale.ROOT),
+				Collectors.counting()
+			));
 
 		for (String type : monitoredTypes) {
 			long count = stockByType.getOrDefault(type, 0L);

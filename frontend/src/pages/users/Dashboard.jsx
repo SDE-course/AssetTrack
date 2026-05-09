@@ -9,9 +9,22 @@ function Dashboard({onNavigate}) {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/dashboard');
-        if (!res.ok) throw new Error('Failed to load assets');
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/dashboard', {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          }
+        });
+
+        // If unauthorized, send user back to login
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
         const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || 'Failed to load assets');
         setStats(data || null);
       } catch (e) {
         setError(e.message || 'Error');

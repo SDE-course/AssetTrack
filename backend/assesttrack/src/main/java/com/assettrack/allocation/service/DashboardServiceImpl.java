@@ -30,7 +30,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         Map<String, Long> typeCounts = assets.stream()
                 .collect(Collectors.groupingBy(
-                        asset -> normalize(asset.getType()),
+                        asset -> normalize(asset.getType() != null ? asset.getType().name() : null),
                         LinkedHashMap::new,
                         Collectors.counting()));
 

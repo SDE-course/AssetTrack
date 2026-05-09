@@ -55,7 +55,7 @@ public class SearchServiceImpl implements SearchService {
                 .name(asset.getName())
                 .serialNumber(asset.getSerialNumber())
                 .brand(asset.getBrand())
-                .type(asset.getType())
+                .type(asset.getType() != null ? asset.getType().name() : null)
                 .status(asset.getStatus() != null ? asset.getStatus().name() : null)
                 .ram(asset.getRam())
                 .storage(asset.getStorage())

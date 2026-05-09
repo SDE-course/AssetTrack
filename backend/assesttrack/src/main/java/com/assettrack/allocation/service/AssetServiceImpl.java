@@ -5,6 +5,7 @@ import com.assettrack.allocation.dto.CreateAssetRequest;
 import com.assettrack.allocation.dto.UpdateAssetRequest;
 import com.assettrack.allocation.entity.Asset;
 import com.assettrack.allocation.entity.AssetStatus;
+import com.assettrack.allocation.entity.AssetType;
 import com.assettrack.allocation.exception.BadRequestException;
 import com.assettrack.allocation.exception.ResourceNotFoundException;
 import com.assettrack.allocation.repository.AssetRepository;
@@ -28,7 +29,7 @@ public class AssetServiceImpl implements AssetService {
         verifyUniqueSerialNumber(request.getSerialNumber(), null);
 
         Asset asset = Asset.builder()
-                .type(request.getType())
+            .type(parseType(request.getType()))
                 .brand(request.getBrand())
                 .name(request.getName())
                 .serialNumber(request.getSerialNumber())
@@ -67,7 +68,7 @@ public class AssetServiceImpl implements AssetService {
             asset.setSerialNumber(request.getSerialNumber());
         }
         if (request.getType() != null && !request.getType().isBlank()) {
-            asset.setType(request.getType());
+            asset.setType(parseType(request.getType()));
         }
         if (request.getBrand() != null && !request.getBrand().isBlank()) {
             asset.setBrand(request.getBrand());
@@ -103,7 +104,7 @@ public class AssetServiceImpl implements AssetService {
                 .name(asset.getName())
                 .serialNumber(asset.getSerialNumber())
                 .brand(asset.getBrand())
-                .type(asset.getType())
+            .type(asset.getType() != null ? asset.getType().name() : null)
                 .status(asset.getStatus() != null ? asset.getStatus().name() : null)
                 .ram(asset.getRam())
                 .storage(asset.getStorage())
@@ -122,6 +123,15 @@ public class AssetServiceImpl implements AssetService {
         }
 
         return b.build();
+    }
+
+    private AssetType parseType(String type) {
+        if (type == null || type.isBlank()) return null;
+        try {
+            return AssetType.valueOf(type.trim().toUpperCase());
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid asset type: " + type);
+        }
     }
 
     private void verifyUniqueSerialNumber(String serialNumber, Long existingAssetId) {
