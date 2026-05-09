@@ -20,14 +20,16 @@ public class Asset {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // كان model → خليناه name
+    private String name; 
 
     @Column(nullable = false, unique = true)
     private String serialNumber;
 
     private String brand;
 
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AssetType type;
 
     private LocalDate purchaseDate;
 
