@@ -31,3 +31,5 @@ public class User {
     @OneToMany(mappedBy = "assignedTo", fetch = FetchType.LAZY)
     private List<Allocation> allocations;
 }
+
+
