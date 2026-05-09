@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class AssetServiceImpl implements AssetService {
 
     private final AssetRepository assetRepository;
+    private final com.assettrack.allocation.repository.AllocationRepository allocationRepository;
 
     @Override
     @Transactional
@@ -97,7 +98,7 @@ public class AssetServiceImpl implements AssetService {
     }
 
     private AssetResponse toResponse(Asset asset) {
-        return AssetResponse.builder()
+        AssetResponse.AssetResponseBuilder b = AssetResponse.builder()
                 .id(asset.getId())
                 .name(asset.getName())
                 .serialNumber(asset.getSerialNumber())
@@ -106,7 +107,21 @@ public class AssetServiceImpl implements AssetService {
                 .status(asset.getStatus() != null ? asset.getStatus().name() : null)
                 .ram(asset.getRam())
                 .storage(asset.getStorage())
-                .build();
+                .purchaseDate(asset.getPurchaseDate())
+                .warrantyExpiryDate(asset.getWarrantyExpiryDate());
+
+        // Attach last allocation (most recent) if available
+        try {
+            java.util.List<com.assettrack.allocation.entity.Allocation> history = allocationRepository.findAllByAssetIdOrderByAssignedDateDesc(asset.getId());
+            if (history != null && !history.isEmpty()) {
+                com.assettrack.allocation.entity.Allocation last = history.get(0);
+                b.lastAssignedTo(last.getAssignedTo() != null ? last.getAssignedTo().getName() : null);
+                b.lastAssignedDate(last.getAssignedDate() != null ? last.getAssignedDate().toLocalDate() : null);
+            }
+        } catch (Exception ignored) {
+        }
+
+        return b.build();
     }
 
     private void verifyUniqueSerialNumber(String serialNumber, Long existingAssetId) {

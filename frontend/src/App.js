@@ -1,24 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import './services/App.css';
+import React, {useState} from 'react';
+import Dashboard from './pages/users/Dashboard';
+import Notifications from './pages/users/Notifications';
+import Reports from './pages/users/Reports';
 
 function App() {
+  const [page, setPage] = useState('dashboard');
+  const navigate = (p) => setPage(p);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {page === 'dashboard' && <Dashboard onNavigate={navigate} />}
+      {page === 'notifications' && <Notifications onNavigate={navigate} />}
+      {page === 'reports' && <Reports onNavigate={navigate} />}
+    </>
   );
 }
 

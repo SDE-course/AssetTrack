@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 /**
  * =====================================================================
@@ -48,6 +49,11 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/api/dashboard", "/api/dashboard/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/assets", "/api/assets/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/search", "/api/search/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/notifications", "/api/notifications/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reports", "/api/reports/**").permitAll()
                 .anyRequest().authenticated()
             )
             // Use HTTP Basic Auth so you can switch roles in Postman easily
