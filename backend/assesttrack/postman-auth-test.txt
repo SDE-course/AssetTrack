@@ -1,0 +1,59 @@
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+22:04:02.139 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.assettrack.allocation.controller.AllocationControllerTest]: AllocationControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:04:02.402 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.assettrack.AssesttrackApplication for test class com.assettrack.allocation.controller.AllocationControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.14)
+
+2026-05-08T22:04:02.995+03:00  INFO 131268 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : Starting AllocationControllerTest using Java 17.0.18 with PID 131268 (started by LENOVO in c:\Users\LENOVO\Documents\Assest_Track\backend\assesttrack)
+2026-05-08T22:04:02.996+03:00  INFO 131268 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : No active profile set, falling back to 1 default profile: "local"
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-05-08T22:04:06.153+03:00  INFO 131268 --- [assesttrack] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name localUserDetailsService
+2026-05-08T22:04:06.556+03:00  INFO 131268 --- [assesttrack] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-05-08T22:04:06.557+03:00  INFO 131268 --- [assesttrack] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-05-08T22:04:06.558+03:00  INFO 131268 --- [assesttrack] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-05-08T22:04:06.589+03:00  INFO 131268 --- [assesttrack] [           main] c.a.a.c.AllocationControllerTest         : Started AllocationControllerTest in 4.11 seconds (process running for 5.354)
+2026-05-08T22:04:07.670+03:00  INFO 131268 --- [assesttrack] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.assettrack.AssesttrackApplicationTests]: AssesttrackApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-08T22:04:07.684+03:00  INFO 131268 --- [assesttrack] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.assettrack.AssesttrackApplication for test class com.assettrack.AssesttrackApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.14)
+
+2026-05-08T22:04:07.721+03:00  INFO 131268 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : Starting AssesttrackApplicationTests using Java 17.0.18 with PID 131268 (started by LENOVO in c:\Users\LENOVO\Documents\Assest_Track\backend\assesttrack)
+2026-05-08T22:04:07.721+03:00  INFO 131268 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : No active profile set, falling back to 1 default profile: "local"
+2026-05-08T22:04:08.167+03:00  INFO 131268 --- [assesttrack] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-08T22:04:08.254+03:00  INFO 131268 --- [assesttrack] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 70 ms. Found 3 JPA repository interfaces.
+2026-05-08T22:04:08.897+03:00  INFO 131268 --- [assesttrack] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-08T22:04:09.029+03:00  INFO 131268 --- [assesttrack] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.49.Final
+2026-05-08T22:04:09.138+03:00  INFO 131268 --- [assesttrack] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-08T22:04:09.476+03:00  INFO 131268 --- [assesttrack] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-08T22:04:09.561+03:00  INFO 131268 --- [assesttrack] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-08T22:04:13.679+03:00  INFO 131268 --- [assesttrack] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@44f5259a
+2026-05-08T22:04:13.681+03:00  INFO 131268 --- [assesttrack] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-08T22:04:13.945+03:00  WARN 131268 --- [assesttrack] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-08T22:04:14.550+03:00  INFO 131268 --- [assesttrack] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 15.16
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-08T22:04:15.763+03:00  INFO 131268 --- [assesttrack] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-08T22:04:18.826+03:00  INFO 131268 --- [assesttrack] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-08T22:04:19.509+03:00  INFO 131268 --- [assesttrack] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-08T22:04:20.806+03:00  INFO 131268 --- [assesttrack] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name localUserDetailsService
+2026-05-08T22:04:21.122+03:00  INFO 131268 --- [assesttrack] [           main] c.a.AssesttrackApplicationTests          : Started AssesttrackApplicationTests in 13.428 seconds (process running for 19.888)

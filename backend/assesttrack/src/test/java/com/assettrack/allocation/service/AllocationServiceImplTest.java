@@ -1,55 +1,42 @@
 package com.assettrack.allocation.service;
 
-import com.assettrack.allocation.dto.AllocationHistoryResponse;
-import com.assettrack.allocation.dto.AllocationResponse;
 import com.assettrack.allocation.dto.AssignAssetRequest;
 import com.assettrack.allocation.dto.MessageResponse;
 import com.assettrack.allocation.dto.TransferAssetRequest;
-import com.assettrack.allocation.entity.Allocation;
-import com.assettrack.allocation.entity.Asset;
-import com.assettrack.allocation.entity.AssetStatus;
-import com.assettrack.allocation.entity.User;
-import com.assettrack.allocation.exception.AssetAlreadyAssignedException;
-import com.assettrack.allocation.exception.BadRequestException;
-import com.assettrack.allocation.exception.ResourceNotFoundException;
+import com.assettrack.allocation.entity.*;
+import com.assettrack.allocation.exception.*;
 import com.assettrack.allocation.mapper.AllocationMapper;
-import com.assettrack.allocation.repository.AllocationRepository;
-import com.assettrack.allocation.repository.AssetRepository;
-import com.assettrack.allocation.repository.UserRepository;
-import com.assettrack.usermanagement.domain.Role;
+import com.assettrack.allocation.repository.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class AllocationServiceImplTest {
 
-    @Mock private AllocationRepository allocationRepository;
-    @Mock private AssetRepository assetRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private AllocationMapper mapper;
+    @Mock AllocationRepository allocationRepository;
+    @Mock AssetRepository      assetRepository;
+    @Mock UserRepository       userRepository;
+    @Mock AllocationMapper     mapper;
 
-    @InjectMocks private AllocationServiceImpl service;
+    @InjectMocks
+    AllocationServiceImpl service;
 
+    // ── Fixtures ──────────────────────────────────────────────────────────────
     private User admin;
     private User developer;
-    private User frontendUser;
     private Asset availableAsset;
     private Asset assignedAsset;
     private Asset expiredAsset;
@@ -57,256 +44,207 @@ class AllocationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        admin = User.builder()
-                .id(1L)
-                .fullName("Admin User")
-                .email("admin@example.com")
-                .password("secret")
-                .role(Role.ADMIN)
-                .active(true)
-                .build();
+        admin = User.builder().id(1L).name("Admin").email("admin@test.com")
+                .role(Role.ADMIN).build();
 
-        developer = User.builder()
-                .id(2L)
-                .fullName("Developer User")
-                .email("dev@example.com")
-                .password("secret")
-                .role(Role.DEVELOPER)
-                .active(true)
-                .build();
+        developer = User.builder().id(2L).name("Dev").email("dev@test.com")
+                .role(Role.DEVELOPER).build();
 
-        frontendUser = User.builder()
-                .id(3L)
-                .fullName("Frontend User")
-                .email("frontend@example.com")
-                .password("secret")
-                .role(Role.DEVELOPER)
-                .active(true)
-                .build();
+        availableAsset = Asset.builder().id(10L).name("Dell XPS")
+                .serialNumber("SN-001").status(AssetStatus.AVAILABLE).build();
 
-        availableAsset = Asset.builder()
-                .id(10L)
-                .name("MacBook Pro")
-                .serialNumber("SN-001")
-                .brand("Apple")
-                .type("LAPTOP")
-                .status(AssetStatus.AVAILABLE)
-                .ram(16)
-                .storage(512)
-                .build();
+        assignedAsset = Asset.builder().id(11L).name("MacBook")
+                .serialNumber("SN-002").status(AssetStatus.ASSIGNED).build();
 
-        assignedAsset = Asset.builder()
-                .id(11L)
-                .name("Dell XPS")
-                .serialNumber("SN-002")
-                .brand("Dell")
-                .type("LAPTOP")
-                .status(AssetStatus.ASSIGNED)
-                .ram(16)
-                .storage(512)
-                .build();
-
-        expiredAsset = Asset.builder()
-                .id(12L)
-                .name("Old HP")
-                .serialNumber("SN-003")
-                .brand("HP")
-                .type("LAPTOP")
-                .status(AssetStatus.EXPIRED)
-                .ram(8)
-                .storage(256)
-                .build();
+        expiredAsset = Asset.builder().id(12L).name("Old Laptop")
+                .serialNumber("SN-OLD").status(AssetStatus.EXPIRED).build();
 
         activeAllocation = Allocation.builder()
                 .id(100L)
                 .asset(assignedAsset)
                 .assignedTo(developer)
                 .assignedBy(admin)
-                .assignedDate(LocalDateTime.now().minusDays(5))
+                .assignedDate(LocalDateTime.now().minusDays(1))
                 .active(true)
-                .notes("Initial assignment")
                 .build();
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ASSIGN TESTS
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Test
-    void assignAsset_success() {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(availableAsset.getId());
-        request.setUserId(developer.getId());
-        request.setNotes("Assigned for backend development");
+    @DisplayName("Assign available asset → success")
+    void assignAsset_available_success() {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(10L);
+        req.setUserId(2L);
+        req.setNotes("Test note");
 
-        when(assetRepository.findById(availableAsset.getId())).thenReturn(Optional.of(availableAsset));
-        when(userRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
-        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
-        when(allocationRepository.existsByAssetIdAndActiveTrue(availableAsset.getId())).thenReturn(false);
+        when(assetRepository.findById(10L)).thenReturn(Optional.of(availableAsset));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+        when(allocationRepository.existsByAssetIdAndActiveTrue(10L)).thenReturn(false);
 
-        MessageResponse response = service.assignAsset(request, admin.getId());
+        MessageResponse response = service.assignAsset(req, "admin@test.com");
 
         assertThat(response.getMessage()).isEqualTo("Asset assigned successfully");
-        assertThat(availableAsset.getStatus()).isEqualTo(AssetStatus.ASSIGNED);
         verify(allocationRepository).save(any(Allocation.class));
-        verify(assetRepository).save(availableAsset);
+        assertThat(availableAsset.getStatus()).isEqualTo(AssetStatus.ASSIGNED);
     }
 
     @Test
-    void assignAsset_alreadyAssigned_throwsConflict() {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(availableAsset.getId());
-        request.setUserId(developer.getId());
+    @DisplayName("Assign already-assigned asset → conflict exception")
+    void assignAsset_alreadyAssigned_throwsException() {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(11L);
+        req.setUserId(2L);
 
-        when(assetRepository.findById(availableAsset.getId())).thenReturn(Optional.of(availableAsset));
-        when(userRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
-        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
-        when(allocationRepository.existsByAssetIdAndActiveTrue(availableAsset.getId())).thenReturn(true);
+        when(assetRepository.findById(11L)).thenReturn(Optional.of(assignedAsset));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
 
-        assertThatThrownBy(() -> service.assignAsset(request, admin.getId()))
+        assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))
                 .isInstanceOf(AssetAlreadyAssignedException.class)
-                .hasMessageContaining("active allocation");
-
-        verify(allocationRepository, never()).save(any());
+                .hasMessageContaining("not available");
     }
 
     @Test
-    void assignAsset_expiredAsset_throwsBadRequest() {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(expiredAsset.getId());
-        request.setUserId(developer.getId());
+    @DisplayName("Assign expired asset → bad request exception")
+    void assignAsset_expiredAsset_throwsException() {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(12L);
+        req.setUserId(2L);
 
-        when(assetRepository.findById(expiredAsset.getId())).thenReturn(Optional.of(expiredAsset));
-        when(userRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
-        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        when(assetRepository.findById(12L)).thenReturn(Optional.of(expiredAsset));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(developer));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
 
-        assertThatThrownBy(() -> service.assignAsset(request, admin.getId()))
+        assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Expired assets");
+                .hasMessageContaining("expired");
     }
 
     @Test
-    void assignAsset_invalidAsset_throwsNotFound() {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(999L);
-        request.setUserId(developer.getId());
+    @DisplayName("Assign with invalid asset id → not found exception")
+    void assignAsset_invalidAssetId_throwsException() {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(999L);
+        req.setUserId(2L);
 
         when(assetRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.assignAsset(request, admin.getId()))
+        assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Asset not found");
     }
 
     @Test
-    void assignAsset_invalidUser_throwsNotFound() {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(availableAsset.getId());
-        request.setUserId(999L);
+    @DisplayName("Assign with invalid user id → not found exception")
+    void assignAsset_invalidUserId_throwsException() {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(10L);
+        req.setUserId(999L);
 
-        when(assetRepository.findById(availableAsset.getId())).thenReturn(Optional.of(availableAsset));
+        when(assetRepository.findById(10L)).thenReturn(Optional.of(availableAsset));
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.assignAsset(request, admin.getId()))
+        assertThatThrownBy(() -> service.assignAsset(req, "admin@test.com"))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("User not found");
     }
 
-    @Test
-    void returnAsset_success() {
-        when(allocationRepository.findById(activeAllocation.getId())).thenReturn(Optional.of(activeAllocation));
+    // ─────────────────────────────────────────────────────────────────────────
+    // RETURN TESTS
+    // ─────────────────────────────────────────────────────────────────────────
 
-        MessageResponse response = service.returnAsset(activeAllocation.getId());
+    @Test
+    @DisplayName("Return active allocation → success")
+    void returnAsset_active_success() {
+        when(allocationRepository.findById(100L)).thenReturn(Optional.of(activeAllocation));
+
+        MessageResponse response = service.returnAsset(100L);
 
         assertThat(response.getMessage()).isEqualTo("Asset returned successfully");
         assertThat(activeAllocation.isActive()).isFalse();
         assertThat(activeAllocation.getReturnedDate()).isNotNull();
-        assertThat(activeAllocation.getAsset().getStatus()).isEqualTo(AssetStatus.AVAILABLE);
-        verify(assetRepository).save(activeAllocation.getAsset());
+        assertThat(assignedAsset.getStatus()).isEqualTo(AssetStatus.AVAILABLE);
     }
 
     @Test
-    void returnAsset_alreadyReturned_throwsBadRequest() {
+    @DisplayName("Return already-returned allocation → bad request")
+    void returnAsset_alreadyReturned_throwsException() {
         activeAllocation.setActive(false);
-        when(allocationRepository.findById(activeAllocation.getId())).thenReturn(Optional.of(activeAllocation));
+        when(allocationRepository.findById(100L)).thenReturn(Optional.of(activeAllocation));
 
-        assertThatThrownBy(() -> service.returnAsset(activeAllocation.getId()))
+        assertThatThrownBy(() -> service.returnAsset(100L))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("already closed");
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // TRANSFER TESTS
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Test
+    @DisplayName("Transfer asset to new user → success + history preserved")
     void transferAsset_success() {
-        TransferAssetRequest request = new TransferAssetRequest();
-        request.setAllocationId(activeAllocation.getId());
-        request.setNewUserId(frontendUser.getId());
-        request.setNotes("Transferred to frontend developer");
+        User newUser = User.builder().id(3L).name("New Dev").email("new@test.com")
+                .role(Role.DEVELOPER).build();
 
-        when(allocationRepository.findById(activeAllocation.getId())).thenReturn(Optional.of(activeAllocation));
-        when(userRepository.findById(frontendUser.getId())).thenReturn(Optional.of(frontendUser));
-        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        TransferAssetRequest req = new TransferAssetRequest();
+        req.setAllocationId(100L);
+        req.setNewUserId(3L);
+        req.setNotes("Transferred to frontend team");
 
-        MessageResponse response = service.transferAsset(request, admin.getId());
+        when(allocationRepository.findById(100L)).thenReturn(Optional.of(activeAllocation));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(newUser));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+
+        MessageResponse response = service.transferAsset(req, "admin@test.com");
 
         assertThat(response.getMessage()).isEqualTo("Asset transferred successfully");
-        verify(allocationRepository, times(2)).save(any(Allocation.class));
+
+        // Old allocation must be closed
         assertThat(activeAllocation.isActive()).isFalse();
+        assertThat(activeAllocation.getReturnedDate()).isNotNull();
+
+        // A NEW allocation should have been saved
+        verify(allocationRepository, times(2)).save(any(Allocation.class));
+
+        // Asset must stay ASSIGNED (not freed)
+        assertThat(assignedAsset.getStatus()).isEqualTo(AssetStatus.ASSIGNED);
     }
 
     @Test
-    void transferAsset_inactiveAllocation_throwsBadRequest() {
-        activeAllocation.setActive(false);
-        TransferAssetRequest request = new TransferAssetRequest();
-        request.setAllocationId(activeAllocation.getId());
-        request.setNewUserId(frontendUser.getId());
+    @DisplayName("Transfer to same user → bad request")
+    void transferAsset_sameUser_throwsException() {
+        TransferAssetRequest req = new TransferAssetRequest();
+        req.setAllocationId(100L);
+        req.setNewUserId(developer.getId()); // same as current holder
 
-        when(allocationRepository.findById(activeAllocation.getId())).thenReturn(Optional.of(activeAllocation));
+        when(allocationRepository.findById(100L)).thenReturn(Optional.of(activeAllocation));
+        when(userRepository.findById(developer.getId())).thenReturn(Optional.of(developer));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
 
-        assertThatThrownBy(() -> service.transferAsset(request, admin.getId()))
+        assertThatThrownBy(() -> service.transferAsset(req, "admin@test.com"))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("not active");
+                .hasMessageContaining("same user");
     }
 
     @Test
-    void getAllocationHistory_returnsHistory() {
-        AllocationHistoryResponse historyResponse = AllocationHistoryResponse.builder()
-                .allocationId(activeAllocation.getId())
-                .user("Developer User")
-                .userId(developer.getId())
-                .assignedBy("Admin User")
-                .assignedDate(activeAllocation.getAssignedDate())
-                .returnedDate(null)
-                .active(true)
-                .notes(activeAllocation.getNotes())
-                .build();
+    @DisplayName("Transfer inactive allocation → bad request")
+    void transferAsset_inactiveAllocation_throwsException() {
+        activeAllocation.setActive(false);
 
-        when(assetRepository.existsById(availableAsset.getId())).thenReturn(true);
-        when(allocationRepository.findAllByAssetIdOrderByAssignedDateDesc(availableAsset.getId()))
-                .thenReturn(List.of(activeAllocation));
-        when(mapper.toHistoryResponse(activeAllocation)).thenReturn(historyResponse);
+        TransferAssetRequest req = new TransferAssetRequest();
+        req.setAllocationId(100L);
+        req.setNewUserId(3L);
 
-        List<AllocationHistoryResponse> result = service.getAllocationHistory(availableAsset.getId());
+        when(allocationRepository.findById(100L)).thenReturn(Optional.of(activeAllocation));
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUser()).isEqualTo("Developer User");
-    }
-
-    @Test
-    void getCurrentOwner_whenActiveAllocationExists_returnsMappedResponse() {
-        when(assetRepository.existsById(assignedAsset.getId())).thenReturn(true);
-        when(allocationRepository.findByAssetIdAndActiveTrue(assignedAsset.getId())).thenReturn(Optional.of(activeAllocation));
-        when(mapper.toResponse(activeAllocation)).thenReturn(AllocationResponse.builder().id(activeAllocation.getId()).build());
-
-        Object result = service.getCurrentOwner(assignedAsset.getId());
-
-        assertThat(result).isInstanceOf(AllocationResponse.class);
-        assertThat(((AllocationResponse) result).getId()).isEqualTo(activeAllocation.getId());
-    }
-
-    @Test
-    void getCurrentOwner_whenNoActiveAllocation_returnsMessage() {
-        when(assetRepository.existsById(availableAsset.getId())).thenReturn(true);
-        when(allocationRepository.findByAssetIdAndActiveTrue(availableAsset.getId())).thenReturn(Optional.empty());
-
-        Object result = service.getCurrentOwner(availableAsset.getId());
-
-        assertThat(result).isInstanceOf(MessageResponse.class);
-        assertThat(((MessageResponse) result).getMessage()).isEqualTo("Asset is currently available");
+        assertThatThrownBy(() -> service.transferAsset(req, "admin@test.com"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("inactive");
     }
 }

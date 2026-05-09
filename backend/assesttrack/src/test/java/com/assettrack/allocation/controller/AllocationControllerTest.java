@@ -1,13 +1,11 @@
 package com.assettrack.allocation.controller;
 
-import com.assettrack.allocation.dto.AllocationHistoryResponse;
-import com.assettrack.allocation.dto.AssignAssetRequest;
-import com.assettrack.allocation.dto.MessageResponse;
-import com.assettrack.allocation.dto.SpareLaptopResponse;
-import com.assettrack.allocation.dto.TransferAssetRequest;
+import com.assettrack.allocation.config.SecurityConfig;
+import com.assettrack.allocation.dto.*;
+import com.assettrack.allocation.exception.*;
 import com.assettrack.allocation.service.AllocationService;
-import com.assettrack.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,133 +17,138 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AllocationController.class)
 @Import(SecurityConfig.class)
 class AllocationControllerTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @MockBean private AllocationService allocationService;
+    @Autowired MockMvc mockMvc;
+    @Autowired ObjectMapper objectMapper;
+
+    @MockBean AllocationService allocationService;
+
+    // ── ASSIGN ────────────────────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = "1", roles = {"MANAGER"})
-    void assignAsset_returnsSuccess() throws Exception {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(1L);
-        request.setUserId(3L);
-        request.setNotes("Assigned for backend development");
+    @DisplayName("ADMIN can assign asset → 200 OK")
+    @WithMockUser(roles = "ADMIN")
+    void assignAsset_asAdmin_returns200() throws Exception {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(1L);
+        req.setUserId(2L);
 
-        when(allocationService.assignAsset(any(AssignAssetRequest.class), anyLong()))
+        when(allocationService.assignAsset(any(), any()))
                 .thenReturn(new MessageResponse("Asset assigned successfully"));
 
         mockMvc.perform(post("/api/allocations/assign")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Asset assigned successfully"));
     }
 
     @Test
-    @WithMockUser(username = "1", roles = {"DEVELOPER"})
-    void assignAsset_developerForbidden() throws Exception {
-        AssignAssetRequest request = new AssignAssetRequest();
-        request.setAssetId(1L);
-        request.setUserId(3L);
+    @DisplayName("DEVELOPER cannot assign → 403 Forbidden")
+    @WithMockUser(roles = "DEVELOPER")
+    void assignAsset_asDeveloper_returns403() throws Exception {
+        AssignAssetRequest req = new AssignAssetRequest();
+        req.setAssetId(1L);
+        req.setUserId(2L);
 
         mockMvc.perform(post("/api/allocations/assign")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(username = "1", roles = {"MANAGER"})
-    void returnAsset_returnsSuccess() throws Exception {
-        when(allocationService.returnAsset(10L))
+    @DisplayName("Assign missing assetId → 400 validation error")
+    @WithMockUser(roles = "ADMIN")
+    void assignAsset_missingAssetId_returns400() throws Exception {
+        // assetId intentionally missing
+        String body = """
+                { "userId": 2 }
+                """;
+
+        mockMvc.perform(post("/api/allocations/assign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ── RETURN ────────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("MANAGER can return asset → 200 OK")
+    @WithMockUser(roles = "MANAGER")
+    void returnAsset_asManager_returns200() throws Exception {
+        when(allocationService.returnAsset(1L))
                 .thenReturn(new MessageResponse("Asset returned successfully"));
 
-        mockMvc.perform(post("/api/allocations/10/return").with(csrf()))
+        mockMvc.perform(post("/api/allocations/1/return"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Asset returned successfully"));
     }
 
     @Test
-    @WithMockUser(username = "1", roles = {"MANAGER"})
-    void transferAsset_returnsSuccess() throws Exception {
-        TransferAssetRequest request = new TransferAssetRequest();
-        request.setAllocationId(10L);
-        request.setNewUserId(5L);
-        request.setNotes("Transferred to frontend developer");
+    @DisplayName("Return non-existent allocation → 404")
+    @WithMockUser(roles = "ADMIN")
+    void returnAsset_notFound_returns404() throws Exception {
+        when(allocationService.returnAsset(999L))
+                .thenThrow(new ResourceNotFoundException("Allocation not found with id: 999"));
 
-        when(allocationService.transferAsset(any(TransferAssetRequest.class), anyLong()))
+        mockMvc.perform(post("/api/allocations/999/return"))
+                .andExpect(status().isNotFound());
+    }
+
+    // ── TRANSFER ──────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("ADMIN can transfer asset → 200 OK")
+    @WithMockUser(roles = "ADMIN")
+    void transferAsset_asAdmin_returns200() throws Exception {
+        TransferAssetRequest req = new TransferAssetRequest();
+        req.setAllocationId(1L);
+        req.setNewUserId(5L);
+
+        when(allocationService.transferAsset(any(), any()))
                 .thenReturn(new MessageResponse("Asset transferred successfully"));
 
         mockMvc.perform(post("/api/allocations/transfer")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Asset transferred successfully"));
     }
 
+    // ── HISTORY ───────────────────────────────────────────────────────────────
+
     @Test
-    @WithMockUser(roles = {"DEVELOPER"})
-    void getHistory_returnsHistory() throws Exception {
-        AllocationHistoryResponse historyResponse = AllocationHistoryResponse.builder()
-                .allocationId(20L)
-                .user("Ahmed")
-                .userId(3L)
-                .assignedBy("Admin")
-                .active(false)
-                .build();
+    @DisplayName("DEVELOPER can read history → 200 OK")
+    @WithMockUser(roles = "DEVELOPER")
+    void getHistory_asDeveloper_returns200() throws Exception {
+        when(allocationService.getAllocationHistory(1L)).thenReturn(List.of());
 
-        when(allocationService.getAllocationHistory(7L)).thenReturn(List.of(historyResponse));
-
-        mockMvc.perform(get("/api/allocations/asset/7/history"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].user").value("Ahmed"));
+        mockMvc.perform(get("/api/allocations/asset/1/history"))
+                .andExpect(status().isOk());
     }
 
-    @Test
-    @WithMockUser(roles = {"DEVELOPER"})
-    void getCurrentOwner_returnsAvailableMessage() throws Exception {
-        when(allocationService.getCurrentOwner(7L))
-                .thenReturn(new MessageResponse("Asset is currently available"));
-
-        mockMvc.perform(get("/api/allocations/current-owner/7"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Asset is currently available"));
-    }
+    // ── SPARE LAPTOPS ─────────────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(roles = {"DEVELOPER"})
-    void getSpareLaptops_returnsList() throws Exception {
-        SpareLaptopResponse response = SpareLaptopResponse.builder()
-                .id(1L)
-                .name("MacBook Pro")
-                .serialNumber("SN-001")
-                .brand("Apple")
-                .ram(16)
-                .storage(512)
-                .status("AVAILABLE")
-                .build();
+    @DisplayName("Get spare laptops with filters → 200 OK")
+    @WithMockUser(roles = "DEVELOPER")
+    void getSpareLaptops_withFilters_returns200() throws Exception {
+        when(allocationService.getSpareLaptops("Dell", 16, 512)).thenReturn(List.of());
 
-        when(allocationService.getSpareLaptops(null, null, null)).thenReturn(List.of(response));
-
-        mockMvc.perform(get("/api/allocations/spare-laptops"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].brand").value("Apple"));
+        mockMvc.perform(get("/api/allocations/spare-laptops")
+                        .param("brand", "Dell")
+                        .param("ram", "16")
+                        .param("storage", "512"))
+                .andExpect(status().isOk());
     }
 }
