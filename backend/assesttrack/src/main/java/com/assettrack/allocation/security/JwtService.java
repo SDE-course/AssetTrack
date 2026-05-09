@@ -5,87 +5,96 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
-import java.util.Base64;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
 import java.util.function.Function;
 
-/**
- * Handles JWT creation, parsing, and validation.
- *
- * Required application.properties (or yml) entries:
- *   jwt.secret=<base64-encoded 256-bit key>
- *   jwt.expiration=86400000   # 24 h in milliseconds
- */
 @Service
+@Slf4j
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    @Value("${app.jwt.secret}")
+    private String secretString;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
+    private SecretKey key;
 
-    // ── Public API ───────────────────────────────────────────────────────
-
-    /** Generate a token for the given user (no extra claims). */
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    /** Generate a token with additional claims embedded. */
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    /** Returns true when the token belongs to the user and is not expired. */
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        try {
-            final String username = extractUsername(token);
-            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+    @PostConstruct
+    public void init() {
+        if (secretString == null || secretString.isEmpty()) {
+            log.warn("JWT secret is not configured in application.properties. Generating a new temporary secret.");
+            key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            log.warn("Please add the following line to your application.properties file:");
+            log.warn("app.jwt.secret=" + Base64.getEncoder().encodeToString(key.getEncoded()));
+        } else {
+            byte[] keyBytes = Base64.getDecoder().decode(secretString);
+            this.key = Keys.hmacShaKeyFor(keyBytes);
         }
     }
 
-    /** Extract the email/username stored in the subject claim. */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // ── Private helpers ──────────────────────────────────────────────────
-
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateToken(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails
+    ) {
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+        return extractExpiration(token).before(new Date());
     }
 
-    private Key getSigningKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    private Claims extractAllClaims(String token) {
+        try {
+            return Jwts
+                    .parserBuilder()
+                    .setSigningKey(getSignInKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            log.error("Error parsing JWT: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    private SecretKey getSignInKey() {
+        return key;
     }
 }

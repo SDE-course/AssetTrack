@@ -24,8 +24,8 @@ const Register = () => {
             errs.email = 'Enter a valid email';
         if (!form.password)
             errs.password = 'Password is required';
-        else if (form.password.length < 8)
-            errs.password = 'Password must be at least 8 characters';
+        else if (form.password.length < 4)
+            errs.password = 'Password must be at least 4 characters';
         return errs;
     };
 
@@ -152,7 +152,7 @@ const Register = () => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Min. 8 characters"
+                                placeholder="Min. 4 characters"
                                 value={form.password}
                                 onChange={handleChange}
                                 className={errors.password ? 'input-error' : ''}
@@ -175,7 +175,6 @@ const Register = () => {
 
                 {/* Right — decorative panel */}
                 <div className="register-panel">
-                    <div className="panel-icon">🖥️</div>
                     <p className="panel-title">Track every asset, always</p>
                     <p className="panel-subtitle">
                         Real-time visibility into laptops, monitors, and accessories across your entire team.

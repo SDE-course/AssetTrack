@@ -21,7 +21,6 @@ import java.io.IOException;
  * valid JWT is present — populates the Spring Security context so that
  * @PreAuthorize and other security checks work correctly.
  */
-@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
