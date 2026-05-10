@@ -1,31 +1,40 @@
 // src/pages/users/UsersPage.jsx
-
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userService } from '../../services/userService';
 import UserDetailsModal from '../../components/users/UserDetailsModal';
+import '../../styles/UsersPage.css';
 
 const ROLES = ['ADMIN', 'MANAGER', 'DEVELOPER'];
-
-const ROLE_COLORS = {
-  ADMIN: 'bg-red-100 text-red-700',
-  MANAGER: 'bg-blue-100 text-blue-700',
-  DEVELOPER: 'bg-green-100 text-green-700',
-};
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
 
-  // Fetch users
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
+      const res = await userService.getAll({ page, size });
+      const payload = res.data;
+      const rows = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.content)
+          ? payload.content
+          : [];
 
-      const res = await userService.getAll();
-
-      setUsers(res.data);
+      setUsers(rows);
+      if (Array.isArray(payload)) {
+        setTotalElements(rows.length);
+        setTotalPages(1);
+      } else {
+        setTotalElements(Number(payload?.totalElements ?? rows.length));
+        setTotalPages(Math.max(1, Number(payload?.totalPages ?? 1)));
+      }
       setError('');
     } catch (err) {
       console.error(err);
@@ -33,151 +42,147 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-  // Change role
   const handleRoleChange = async (userId, newRole) => {
     try {
       await userService.changeRole(userId, newRole);
-
-      setUsers(prev =>
-        prev.map(user =>
-          user.id === userId
-            ? { ...user, role: newRole }
-            : user
-        )
-      );
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
     } catch (err) {
       console.error(err);
       alert('Failed to update role.');
     }
   };
 
-  // Delete user
   const handleDelete = async (userId) => {
-    const confirmed = window.confirm('Delete this user?');
-
-    if (!confirmed) return;
-
+    if (!window.confirm('Delete this user?')) return;
     try {
       await userService.delete(userId);
-
-      // Remove user from UI
-      setUsers(prev =>
-        prev.filter(user => user.id !== userId)
-      );
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      setTotalElements(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error(err);
       alert('Failed to delete user.');
     }
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        Loading users...
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="p-8 text-center text-red-500">
-        {error}
-      </div>
-    );
-  }
+  if (loading) return <div className="users-page"><div className="users-loading">Loading users…</div></div>;
+  if (error)   return <div className="users-page"><div className="users-error">{error}</div></div>;
 
   return (
-    <div className="p-6">
-      {/* Title */}
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        User Management
-      </h1>
+    <div className="users-page">
+      <div className="users-container">
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl shadow border border-gray-200">
-        <table className="min-w-full bg-white text-sm">
-          {/* Header */}
-          <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-            <tr>
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Role</th>
-              <th className="px-4 py-3 text-left">Actions</th>
-            </tr>
-          </thead>
+        {/* Header */}
+        <header className="users-header">
+          <div>
+            <p className="users-kicker">Administration</p>
+            <h2>User Management</h2>
+            <p className="users-subtitle">{totalElements} registered users</p>
+          </div>
+        </header>
 
-          {/* Body */}
-          <tbody className="divide-y divide-gray-100">
+        {/* Table */}
+        <section className="users-panel">
+          <div className="users-table">
+            <div className="users-table-header users-table-row">
+              <div className="users-table-cell">Name</div>
+              <div className="users-table-cell">Email</div>
+              <div className="users-table-cell">Role</div>
+              <div className="users-table-cell">Actions</div>
+            </div>
+
+            {users.length === 0 && (
+              <div className="users-empty">No users found.</div>
+            )}
+
             {users.map(user => (
-              <tr
-                key={user.id}
-                className="hover:bg-gray-50 transition"
-              >
+              <div key={user.id} className="users-table-row users-data-row">
                 {/* Name */}
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  {user.name}
-                </td>
+                <div className="users-table-cell">
+                  <div className="users-name">{user.name}</div>
+                </div>
 
                 {/* Email */}
-                <td className="px-4 py-3 text-gray-600">
-                  {user.email}
-                </td>
+                <div className="users-table-cell users-email">{user.email}</div>
 
                 {/* Role */}
-                <td className="px-4 py-3">
+                <div className="users-table-cell">
                   <select
                     value={user.role}
-                    onChange={(e) =>
-                      handleRoleChange(user.id, e.target.value)
-                    }
-                    className={`text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer
-                      ${ROLE_COLORS[user.role]}
-                      focus:ring-2 focus:ring-blue-400`}
+                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    className={`users-role-badge users-role-${user.role?.toLowerCase()}`}
                   >
                     {ROLES.map(role => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
+                      <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
-                </td>
+                </div>
 
                 {/* Actions */}
-                <td className="px-4 py-3 flex gap-3">
+                <div className="users-table-cell users-actions-cell">
                   <button
+                    type="button"
+                    className="users-btn users-btn--view"
                     onClick={() => setSelectedUser(user)}
-                    className="text-blue-600 hover:underline text-xs"
                   >
                     View
                   </button>
-
                   <button
+                    type="button"
+                    className="users-btn users-btn--delete"
                     onClick={() => handleDelete(user.id)}
-                    className="text-red-500 hover:underline text-xs"
                   >
                     Delete
                   </button>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </section>
+
+        {/* Pagination */}
+        <div className="users-pagination">
+          <span className="users-page-info">
+            Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+          </span>
+          <div className="users-page-controls">
+            <label htmlFor="users-page-size" className="users-page-label">Rows:</label>
+            <select
+              id="users-page-size"
+              className="users-page-select"
+              value={size}
+              onChange={(e) => { setPage(0); setSize(Number(e.target.value)); }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <button
+              type="button"
+              className="users-page-btn"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              className="users-page-btn"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Modal */}
       {selectedUser && (
-        <UserDetailsModal
-          user={selectedUser}
-          onClose={() => setSelectedUser(null)}
-        />
+        <UserDetailsModal user={selectedUser} onClose={() => setSelectedUser(null)} />
       )}
     </div>
   );

@@ -25,4 +25,16 @@ public enum AssetType {
     public String getDisplayName() {
         return displayName;
     }
+
+    public static AssetType fromString(String s) {
+        if (s == null) return null;
+        String trimmed = s.trim();
+        // match enum name (case-insensitive) or displayName (case-insensitive)
+        for (AssetType t : AssetType.values()) {
+            if (t.name().equalsIgnoreCase(trimmed) || t.displayName.equalsIgnoreCase(trimmed)) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

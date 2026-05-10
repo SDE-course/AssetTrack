@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { assignAsset, getAllocationHistory, getCurrentOwner, returnAsset, transferAsset } from '../../services/allocationService';
 import './allocation.css';
 
@@ -6,6 +7,10 @@ const emptyAssignForm = {
   userId: '',
   notes: '',
 };
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
+}
 
 const emptyTransferForm = {
   allocationId: '',
@@ -30,15 +35,44 @@ const formatDateTime = (value) => {
 };
 
 export default function AssetAllocationConsole() {
+  const navigate = useNavigate();
+  const user = getUser();
+  const role = user.role || '';
+  const isAdminOrManager = role === 'ADMIN' || role === 'MANAGER';
+
   const [assetId, setAssetId] = useState('');
   const [assignForm, setAssignForm] = useState(emptyAssignForm);
   const [transferForm, setTransferForm] = useState(emptyTransferForm);
   const [currentOwner, setCurrentOwner] = useState(null);
   const [history, setHistory] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [loadingAction, setLoadingAction] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isAdminOrManager) {
+      navigate('/dashboard', { replace: true });
+    } else {
+      loadUsers();
+    }
+  }, [isAdminOrManager, navigate]);
+
+  const loadUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users', {
+        headers: { 'Authorization': token ? `Bearer ${token}` : undefined }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(Array.isArray(data?.content) ? data.content : []);
+      }
+    } catch (err) {
+      console.error('Failed to load users');
+    }
+  };
 
   const isActive = Boolean(currentOwner?.active);
   const currentAllocationId = currentOwner?.id ?? currentOwner?.allocationId ?? null;
@@ -279,15 +313,17 @@ export default function AssetAllocationConsole() {
 
             <form className="stacked-form" onSubmit={handleAssign}>
               <label>
-                <span className="field-label">User ID</span>
-                <input
-                  type="number"
-                  min="1"
+                <span className="field-label">User</span>
+                <select
                   value={assignForm.userId}
                   onChange={(event) => setAssignForm((prev) => ({ ...prev, userId: event.target.value }))}
-                  placeholder="User ID"
                   required
-                />
+                >
+                  <option value="">Select a user</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
               </label>
               <label>
                 <span className="field-label">Notes</span>
@@ -351,15 +387,17 @@ export default function AssetAllocationConsole() {
                 />
               </label>
               <label>
-                <span className="field-label">New user ID</span>
-                <input
-                  type="number"
-                  min="1"
+                <span className="field-label">New user</span>
+                <select
                   value={transferForm.newUserId}
                   onChange={(event) => setTransferForm((prev) => ({ ...prev, newUserId: event.target.value }))}
-                  placeholder="New user ID"
                   required
-                />
+                >
+                  <option value="">Select a user</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
               </label>
               <label>
                 <span className="field-label">Notes</span>

@@ -45,7 +45,7 @@ public class AllocationMapper {
                 .name(asset.getName())
                 .serialNumber(asset.getSerialNumber())
                 .brand(asset.getBrand())
-                .type(asset.getType())
+                .type(asset.getType() != null ? asset.getType().name() : null)
                 .status(asset.getStatus().name())
                 .ram(asset.getRam())
                 .storage(asset.getStorage())

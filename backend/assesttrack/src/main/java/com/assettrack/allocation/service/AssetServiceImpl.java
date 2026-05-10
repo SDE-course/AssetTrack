@@ -1,14 +1,19 @@
 package com.assettrack.allocation.service;
 
+import com.assettrack.allocation.config.WarrantyNotificationScheduler;
 import com.assettrack.allocation.dto.AssetResponse;
 import com.assettrack.allocation.dto.CreateAssetRequest;
 import com.assettrack.allocation.dto.UpdateAssetRequest;
 import com.assettrack.allocation.entity.Asset;
 import com.assettrack.allocation.entity.AssetStatus;
+import com.assettrack.allocation.entity.AssetType;
 import com.assettrack.allocation.exception.BadRequestException;
 import com.assettrack.allocation.exception.ResourceNotFoundException;
 import com.assettrack.allocation.repository.AssetRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +26,7 @@ public class AssetServiceImpl implements AssetService {
 
     private final AssetRepository assetRepository;
     private final com.assettrack.allocation.repository.AllocationRepository allocationRepository;
+    private final WarrantyNotificationScheduler warrantyScheduler;
 
     @Override
     @Transactional
@@ -28,7 +34,7 @@ public class AssetServiceImpl implements AssetService {
         verifyUniqueSerialNumber(request.getSerialNumber(), null);
 
         Asset asset = Asset.builder()
-                .type(request.getType())
+            .type(parseType(request.getType()))
                 .brand(request.getBrand())
                 .name(request.getName())
                 .serialNumber(request.getSerialNumber())
@@ -37,7 +43,13 @@ public class AssetServiceImpl implements AssetService {
                 .status(AssetStatus.AVAILABLE)
                 .build();
 
-        return toResponse(assetRepository.save(asset));
+        AssetResponse response = toResponse(assetRepository.save(asset));
+        
+        // Trigger immediate warranty and low-stock checks to create notifications if needed
+        warrantyScheduler.checkUpcomingWarrantyExpirations();
+        warrantyScheduler.checkAccessoryStockLevels();
+        
+        return response;
     }
 
     @Override
@@ -46,6 +58,16 @@ public class AssetServiceImpl implements AssetService {
         return assetRepository.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AssetResponse> getAllAssetsPaginated(Pageable pageable) {
+        List<AssetResponse> all = getAllAssets();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), all.size());
+        List<AssetResponse> pageContent = all.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, all.size());
     }
 
     @Override
@@ -67,7 +89,7 @@ public class AssetServiceImpl implements AssetService {
             asset.setSerialNumber(request.getSerialNumber());
         }
         if (request.getType() != null && !request.getType().isBlank()) {
-            asset.setType(request.getType());
+            asset.setType(parseType(request.getType()));
         }
         if (request.getBrand() != null && !request.getBrand().isBlank()) {
             asset.setBrand(request.getBrand());
@@ -85,7 +107,13 @@ public class AssetServiceImpl implements AssetService {
             asset.setWarrantyExpiryDate(request.getWarrantyExpiryDate());
         }
 
-        return toResponse(assetRepository.save(asset));
+        AssetResponse response = toResponse(assetRepository.save(asset));
+        
+        // Trigger immediate warranty and low-stock checks to create notifications if needed
+        warrantyScheduler.checkUpcomingWarrantyExpirations();
+        warrantyScheduler.checkAccessoryStockLevels();
+        
+        return response;
     }
 
     @Override
@@ -103,7 +131,7 @@ public class AssetServiceImpl implements AssetService {
                 .name(asset.getName())
                 .serialNumber(asset.getSerialNumber())
                 .brand(asset.getBrand())
-                .type(asset.getType())
+            .type(asset.getType() != null ? asset.getType().name() : null)
                 .status(asset.getStatus() != null ? asset.getStatus().name() : null)
                 .ram(asset.getRam())
                 .storage(asset.getStorage())
@@ -122,6 +150,15 @@ public class AssetServiceImpl implements AssetService {
         }
 
         return b.build();
+    }
+
+    private AssetType parseType(String type) {
+        if (type == null || type.isBlank()) return null;
+        try {
+            return AssetType.valueOf(type.trim().toUpperCase());
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid asset type: " + type);
+        }
     }
 
     private void verifyUniqueSerialNumber(String serialNumber, Long existingAssetId) {
