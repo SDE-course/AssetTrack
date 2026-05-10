@@ -1,4 +1,9 @@
+// JWT-aware API utility
 const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+
+function getToken() {
+  return localStorage.getItem('token');
+}
 
 function buildUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -24,13 +29,24 @@ async function parseResponse(response) {
 }
 
 async function request(method, path, data) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const response = await fetch(buildUrl(path), {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: data !== undefined ? JSON.stringify(data) : undefined,
   });
+
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+    return;
+  }
 
   const payload = await parseResponse(response);
 
