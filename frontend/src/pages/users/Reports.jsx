@@ -253,6 +253,36 @@ function Reports() {
 					</div>
 				</section>
 
+				{/* My allocated assets - show to all users */}
+				{stats.recentAllocations && stats.recentAllocations.filter(a => a.assignedToUser === user.name && a.active).length > 0 && (
+					<section className="reports-panel reports-wide">
+						<h3>My allocated assets</h3>
+						<div className="reports-list-card">
+							<div className="reports-table">
+								<div className="reports-table-header">
+									<div className="reports-table-cell">Asset</div>
+									<div className="reports-table-cell">Assigned</div>
+									<div className="reports-table-cell">Status</div>
+								</div>
+								{stats.recentAllocations.filter(a => a.assignedToUser === user.name && a.active).map((allocation, idx) => (
+									<div key={idx} className="reports-table-row">
+										<div className="reports-table-cell">
+											<div className="reports-table-key">{allocation.assetTag}</div>
+											<div className="reports-table-subtext">{allocation.assetName}</div>
+										</div>
+										<div className="reports-table-cell">
+											{new Date(allocation.assignedDate).toLocaleDateString()}
+										</div>
+										<div className="reports-table-cell">
+											<span className="reports-status-badge active">Active</span>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					</section>
+				)}
+
 				{/* ── Asset Condition Reports (Admin / Manager only) ──────────────── */}
 				{canViewConditionReports && (
 					<section className="reports-panel reports-wide">
