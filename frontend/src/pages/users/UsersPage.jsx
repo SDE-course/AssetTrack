@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { userService } from '../../services/userService';
 import UserDetailsModal from '../../components/users/UserDetailsModal';
+import '../../styles/UsersPage.css';
 
 const ROLES = ['ADMIN', 'MANAGER', 'DEVELOPER'];
 
@@ -79,7 +80,7 @@ export default function UsersPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="users-page users-page--centered">
         Loading users...
       </div>
     );
@@ -88,24 +89,32 @@ export default function UsersPage() {
   // Error state
   if (error) {
     return (
-      <div className="p-8 text-center text-red-500">
+      <div className="users-page users-page--centered users-page--error">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      {/* Title */}
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        User Management
-      </h1>
+    <div className="users-page">
+      <div className="users-page__header">
+        <div>
+          <p className="users-page__eyebrow">Admin console</p>
+          <h1 className="users-page__title">User Management</h1>
+          <p className="users-page__subtitle">
+            Manage roles, inspect profiles, and remove inactive accounts.
+          </p>
+        </div>
+        <div className="users-page__summary">
+          <span className="users-page__summary-label">Total users</span>
+          <span className="users-page__summary-value">{users.length}</span>
+        </div>
+      </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl shadow border border-gray-200">
-        <table className="min-w-full bg-white text-sm">
-          {/* Header */}
-          <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+      <div className="users-page__card">
+        <div className="users-page__table-wrap">
+          <table className="users-page__table">
+            <thead>
             <tr>
               <th className="px-4 py-3 text-left">Name</th>
               <th className="px-4 py-3 text-left">Email</th>
@@ -114,62 +123,48 @@ export default function UsersPage() {
             </tr>
           </thead>
 
-          {/* Body */}
-          <tbody className="divide-y divide-gray-100">
-            {users.map(user => (
-              <tr
-                key={user.id}
-                className="hover:bg-gray-50 transition"
-              >
-                {/* Name */}
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  {user.name}
-                </td>
+            <tbody>
+              {users.map(user => (
+                <tr key={user.id}>
+                  <td className="users-page__name">{user.name}</td>
 
-                {/* Email */}
-                <td className="px-4 py-3 text-gray-600">
-                  {user.email}
-                </td>
+                  <td className="users-page__email">{user.email}</td>
 
-                {/* Role */}
-                <td className="px-4 py-3">
-                  <select
-                    value={user.role}
-                    onChange={(e) =>
-                      handleRoleChange(user.id, e.target.value)
-                    }
-                    className={`text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer
-                      ${ROLE_COLORS[user.role]}
-                      focus:ring-2 focus:ring-blue-400`}
-                  >
-                    {ROLES.map(role => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
-                </td>
+                  <td className="users-page__role-cell">
+                    <select
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      className={`users-page__select users-page__select--${user.role.toLowerCase()}`}
+                      aria-label={`Change role for ${user.name}`}
+                    >
+                      {ROLES.map(role => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
 
-                {/* Actions */}
-                <td className="px-4 py-3 flex gap-3">
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    className="text-blue-600 hover:underline text-xs"
-                  >
-                    View
-                  </button>
+                  <td className="users-page__actions">
+                    <button
+                      onClick={() => setSelectedUser(user)}
+                      className="users-page__link-btn users-page__link-btn--view"
+                    >
+                      View
+                    </button>
 
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-red-500 hover:underline text-xs"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="users-page__link-btn users-page__link-btn--danger"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal */}

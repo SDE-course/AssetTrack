@@ -99,6 +99,9 @@ export default function AppLayout({ children }) {
     .slice(0, 2);
 
   const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to sign out?');
+    if (!confirmed) return;
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');

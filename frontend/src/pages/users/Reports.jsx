@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import api from '../../services/api';
 import '../../styles/Report.css';
 
 function Reports({ onNavigate }) {
@@ -9,10 +10,8 @@ function Reports({ onNavigate }) {
 	useEffect(() => {
 		async function loadReports() {
 			try {
-				const res = await fetch('/api/reports/usage-statistics');
-				if (!res.ok) throw new Error('Failed to load reports');
-				const data = await res.json();
-				setStats(data);
+				const res = await api.get('/reports/usage-statistics');
+				setStats(res.data || null);
 			} catch (e) {
 				setError(e.message || 'Error loading reports');
 			} finally {
@@ -52,19 +51,19 @@ function Reports({ onNavigate }) {
 				<div className="reports-summary-grid">
 					<div className="reports-card reports-stat-card">
 						<div className="reports-label">Total assets</div>
-						<div className="reports-value">{stats.totalAssets}</div>
+						<div className="reports-value">{stats.totalAssets ?? 0}</div>
 					</div>
 					<div className="reports-card reports-stat-card">
 						<div className="reports-label">Total allocations</div>
-						<div className="reports-value">{stats.totalAllocations}</div>
+						<div className="reports-value">{stats.totalAllocations ?? 0}</div>
 					</div>
 					<div className="reports-card reports-stat-card">
 						<div className="reports-label">Active allocations</div>
-						<div className="reports-value">{stats.activeAllocations}</div>
+						<div className="reports-value">{stats.activeAllocations ?? 0}</div>
 					</div>
 					<div className="reports-card reports-stat-card">
 						<div className="reports-label">Avg. duration (days)</div>
-						<div className="reports-value">{Math.round(stats.averageAllocationDurationDays)}</div>
+						<div className="reports-value">{Math.round(stats.averageAllocationDurationDays ?? 0)}</div>
 					</div>
 				</div>
 

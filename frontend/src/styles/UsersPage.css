@@ -1,0 +1,229 @@
+/* Users admin page */
+.users-page {
+  padding: 28px 32px 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+  color: #f0f2f8;
+}
+
+.users-page--centered {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #9ca3af;
+}
+
+.users-page--error {
+  color: #f87171;
+}
+
+.users-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.users-page__eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #818cf8;
+  margin-bottom: 6px;
+}
+
+.users-page__title {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #f0f2f8;
+}
+
+.users-page__subtitle {
+  margin-top: 8px;
+  max-width: 680px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.users-page__summary {
+  min-width: 120px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  text-align: right;
+}
+
+.users-page__summary-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.users-page__summary-value {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f0f2f8;
+}
+
+.users-page__card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.users-page__table-wrap {
+  overflow-x: auto;
+}
+
+.users-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.users-page__table thead {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.users-page__table thead th {
+  padding: 15px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.users-page__table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.users-page__table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.users-page__table tbody td {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+  color: #d1d5db;
+}
+
+.users-page__name {
+  font-weight: 600;
+  color: #f0f2f8;
+}
+
+.users-page__email {
+  color: #9ca3af;
+}
+
+.users-page__role-cell {
+  width: 180px;
+}
+
+.users-page__select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #f0f2f8;
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 12px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+}
+
+.users-page__select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+
+.users-page__select--admin {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.users-page__select--manager {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.users-page__select--developer {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+}
+
+.users-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.users-page__link-btn {
+  border: 0;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.users-page__link-btn:hover {
+  opacity: 0.86;
+}
+
+.users-page__link-btn--view {
+  color: #93c5fd;
+}
+
+.users-page__link-btn--danger {
+  color: #f87171;
+}
+
+@media (max-width: 900px) {
+  .users-page {
+    padding: 22px 18px 48px;
+  }
+
+  .users-page__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .users-page__summary {
+    text-align: left;
+  }
+}

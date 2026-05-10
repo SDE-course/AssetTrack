@@ -222,11 +222,12 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .btn-icon {
-  width: 28px;
-  height: 28px;
+  min-width: 76px;
+  height: 30px;
   border-radius: 7px;
   border: 1px solid transparent;
   display: flex;
@@ -234,6 +235,10 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .btn-edit {
@@ -243,12 +248,16 @@
 }
 .btn-edit:hover { background: rgba(99,102,241,0.2); }
 
+.btn-edit span { color: #a5b4fc; }
+
 .btn-delete {
   background: rgba(239,68,68,0.08);
   border-color: rgba(239,68,68,0.15);
   color: #f87171;
 }
 .btn-delete:hover { background: rgba(239,68,68,0.18); }
+
+.btn-delete span { color: #fca5a5; }
 
 /* Detail panel */
 .asset-detail-panel {
