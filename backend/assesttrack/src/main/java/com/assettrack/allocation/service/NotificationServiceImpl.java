@@ -22,15 +22,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    // -----------------------------------------------------------------------
-    // Queries
-    // -----------------------------------------------------------------------
+    // ── Queries ───────────────────────────────────────────────────────────────
 
     @Override
     public List<NotificationDTO> findAll() {
         return notificationRepository.findAll()
                 .stream()
-                // Unread first, then newest first within each group
                 .sorted(Comparator
                         .comparing(Notification::isUnread).reversed()
                         .thenComparing(Comparator.comparing(Notification::getCreatedAt).reversed()))
@@ -42,14 +39,31 @@ public class NotificationServiceImpl implements NotificationService {
     public Page<NotificationDTO> findAllPaginated(Pageable pageable) {
         List<NotificationDTO> all = findAll();
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), all.size());
-        List<NotificationDTO> pageContent = all.subList(start, end);
-        return new PageImpl<>(pageContent, pageable, all.size());
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        return new PageImpl<>(all.subList(start, end), pageable, all.size());
     }
 
-    // -----------------------------------------------------------------------
-    // Mutations
-    // -----------------------------------------------------------------------
+    /**
+     * Server-side category filter — fixes the Warranty / Low Stock filter buttons.
+     * The category values stored in the DB are: "warranty", "low-stock", "assignment",
+     * "critical", "info", "success", "warning".
+     */
+    @Override
+    public Page<NotificationDTO> findByCategoryPaginated(String category, Pageable pageable) {
+        List<NotificationDTO> filtered = notificationRepository.findByCategory(category)
+                .stream()
+                .sorted(Comparator
+                        .comparing(Notification::isUnread).reversed()
+                        .thenComparing(Comparator.comparing(Notification::getCreatedAt).reversed()))
+                .map(this::toDto)
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        return new PageImpl<>(filtered.subList(start, end), pageable, filtered.size());
+    }
+
+    // ── Mutations ─────────────────────────────────────────────────────────────
 
     @Override
     @Transactional
@@ -109,13 +123,10 @@ public class NotificationServiceImpl implements NotificationService {
                 n.setCategory("low-stock");
             }
         }
-
         notificationRepository.saveAll(warnings);
     }
 
-    // -----------------------------------------------------------------------
-    // Mapping
-    // -----------------------------------------------------------------------
+    // ── Mapping ───────────────────────────────────────────────────────────────
 
     private NotificationDTO toDto(Notification n) {
         return NotificationDTO.builder()

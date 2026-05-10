@@ -7,11 +7,21 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface NotificationService {
+
     List<NotificationDTO> findAll();
+
     Page<NotificationDTO> findAllPaginated(Pageable pageable);
+
+    /** Server-side filter by category (warranty, low-stock, assignment…) */
+    Page<NotificationDTO> findByCategoryPaginated(String category, Pageable pageable);
+
     void markRead(Long id);
+
     void markAllRead();
+
     void delete(Long id);
+
     void createTestNotification();
+
     void migrateLegacyWarningCategories();
 }

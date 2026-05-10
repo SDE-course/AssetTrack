@@ -82,6 +82,12 @@ export default function AssetsPage() {
   // Detail view
   const [selected, setSelected] = useState(null);
 
+  // Condition report
+  const [showConditionForm, setShowConditionForm] = useState(false);
+  const [conditionForm, setConditionForm] = useState({ issueType: '', description: '' });
+  const [conditionSaving, setConditionSaving] = useState(false);
+  const [conditionSuccess, setConditionSuccess] = useState('');
+
   // Pagination
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -180,6 +186,36 @@ export default function AssetsPage() {
       if (selected?.id === id) setSelected(null);
     } catch (e) {
       alert(e.message || 'Failed to delete asset');
+    }
+  };
+
+  const submitConditionReport = async (e) => {
+    e.preventDefault();
+    if (!selected) return;
+    setConditionSaving(true);
+    setConditionSuccess('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/condition-reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+        body: JSON.stringify({
+          assetId: selected.id,
+          issueType: conditionForm.issueType,
+          description: conditionForm.description,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to submit report');
+      setConditionSuccess('Report submitted successfully!');
+      setConditionForm({ issueType: '', description: '' });
+      setTimeout(() => { setShowConditionForm(false); setConditionSuccess(''); }, 2000);
+    } catch (err) {
+      alert(err.message || 'Failed to submit condition report');
+    } finally {
+      setConditionSaving(false);
     }
   };
 
@@ -388,6 +424,56 @@ export default function AssetsPage() {
             <div className="detail-item"><span className="detail-label">Warranty expiry</span><span>{selected.warrantyExpiryDate || '—'}</span></div>
             {selected.ram && <div className="detail-item"><span className="detail-label">RAM</span><span>{selected.ram} GB</span></div>}
             {selected.storage && <div className="detail-item"><span className="detail-label">Storage</span><span>{selected.storage} GB</span></div>}
+          </div>
+
+          {/* Report Condition Issue */}
+          <div className="detail-condition-section">
+            <button
+              type="button"
+              className="detail-report-btn"
+              onClick={() => { setShowConditionForm((v) => !v); setConditionSuccess(''); }}
+            >
+              {showConditionForm ? 'Cancel' : '⚠ Report an issue'}
+            </button>
+
+            {showConditionForm && (
+              <form className="condition-report-form" onSubmit={submitConditionReport}>
+                <div className="condition-form-group">
+                  <label>Issue type *</label>
+                  <select
+                    value={conditionForm.issueType}
+                    onChange={(e) => setConditionForm((f) => ({ ...f, issueType: e.target.value }))}
+                    required
+                    className="condition-select"
+                  >
+                    <option value="">Select issue…</option>
+                    <option value="Physical Damage">Physical Damage</option>
+                    <option value="Broken">Broken / Not Working</option>
+                    <option value="Weak Battery">Weak Battery</option>
+                    <option value="Screen Issue">Screen Issue</option>
+                    <option value="Keyboard / Mouse Problem">Keyboard / Mouse Problem</option>
+                    <option value="Connectivity Issue">Connectivity Issue</option>
+                    <option value="Performance Issue">Performance Issue</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="condition-form-group">
+                  <label>Description *</label>
+                  <textarea
+                    value={conditionForm.description}
+                    onChange={(e) => setConditionForm((f) => ({ ...f, description: e.target.value }))}
+                    required
+                    rows={3}
+                    placeholder="Describe the issue in detail…"
+                    className="condition-textarea"
+                  />
+                </div>
+                {conditionSuccess && <div className="condition-success">{conditionSuccess}</div>}
+                <button type="submit" className="condition-submit-btn" disabled={conditionSaving}>
+                  {conditionSaving ? 'Submitting…' : 'Submit report'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

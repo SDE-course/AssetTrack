@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -23,20 +21,26 @@ public class NotificationsController {
     private final EmailService emailService;
 
     /**
-     * GET /api/notifications?page=0&size=10
+     * GET /api/notifications?page=0&size=10&category=warranty
      * Returns paginated notifications — unread first, newest first.
+     * Optional ?category filter: warranty | low-stock | assignment | etc.
      */
     @GetMapping
     public ResponseEntity<Page<NotificationDTO>> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String category) {
+
         Pageable pageable = PageRequest.of(page, size);
+
+        if (category != null && !category.isBlank() && !category.equalsIgnoreCase("all")) {
+            return ResponseEntity.ok(notificationService.findByCategoryPaginated(category, pageable));
+        }
         return ResponseEntity.ok(notificationService.findAllPaginated(pageable));
     }
 
     /**
      * POST /api/notifications/{id}/read
-     * Marks a single notification as read.
      */
     @PostMapping("/{id}/read")
     public ResponseEntity<Void> markRead(@PathVariable Long id) {
@@ -46,7 +50,6 @@ public class NotificationsController {
 
     /**
      * POST /api/notifications/mark-all-read
-     * Marks every unread notification as read.
      */
     @PostMapping("/mark-all-read")
     public ResponseEntity<Void> markAllRead() {
@@ -56,7 +59,6 @@ public class NotificationsController {
 
     /**
      * DELETE /api/notifications/{id}
-     * Permanently removes a notification.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -64,52 +66,32 @@ public class NotificationsController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * GET /api/notifications/test
-     * Creates a test notification — remove this before production.
-     */
+    // ── Dev / test endpoints (remove before production) ──────────────────────
+
     @GetMapping("/test")
     public String testNotification() {
         notificationService.createTestNotification();
         return "done";
     }
 
-    /**
-     * GET /api/notifications/test-email
-     * Sends a test email to verify SMTP configuration.
-     */
     @GetMapping("/test-email")
     public String testEmail() {
         emailService.sendTestEmail();
         return "Test email sent — check your inbox.";
     }
 
-    /**
-     * GET /api/notifications/trigger-warranty-check
-     * Manually triggers the warranty expiry check — dev/testing only.
-     * Remove this endpoint before production.
-     */
     @GetMapping("/trigger-warranty-check")
     public ResponseEntity<String> triggerWarrantyCheck() {
         warrantyScheduler.checkUpcomingWarrantyExpirations();
         warrantyScheduler.checkAccessoryStockLevels();
-        return ResponseEntity.ok("Warranty and low-stock checks triggered. Check /api/notifications for new alerts.");
+        return ResponseEntity.ok("Warranty and low-stock checks triggered.");
     }
 
-    /**
-     * GET /api/notifications/low-stock-counts
-     * Returns a map of available counts for monitored low-stock types. Useful for debugging.
-     */
     @GetMapping("/low-stock-counts")
     public ResponseEntity<java.util.Map<String, Long>> lowStockCounts() {
         return ResponseEntity.ok(warrantyScheduler.getAvailableStockByMonitoredTypes());
     }
 
-    /**
-     * POST /api/notifications/migrate-legacy
-     * Migrates old "warning" category notifications to new "warranty" and "low-stock" categories.
-     * Dev/admin endpoint — remove before production.
-     */
     @PostMapping("/migrate-legacy")
     public ResponseEntity<String> migrateLegacy() {
         notificationService.migrateLegacyWarningCategories();

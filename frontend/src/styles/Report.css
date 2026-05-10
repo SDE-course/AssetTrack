@@ -292,3 +292,190 @@
 		gap: 6px;
 	}
 }
+
+/* ── Condition Reports Section ─────────────────────────────────── */
+.reports-loading,
+.reports-empty {
+	padding: 40px;
+	text-align: center;
+	color: #64748b;
+	font-size: 14px;
+}
+
+.reports-condition-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+}
+
+.reports-condition-header h3 { margin: 0; }
+
+.reports-condition-filters {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.reports-condition-filter-btn {
+	padding: 5px 14px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	cursor: pointer;
+	background: rgba(255,255,255,0.04);
+	border: 1px solid rgba(148,163,184,0.14);
+	color: #94a3b8;
+	transition: all 0.15s;
+}
+
+.reports-condition-filter-btn:hover {
+	background: rgba(99,102,241,0.1);
+	border-color: rgba(99,102,241,0.3);
+	color: #c7d2fe;
+}
+
+.reports-condition-filter-btn.active {
+	background: rgba(99,102,241,0.2);
+	border-color: rgba(99,102,241,0.4);
+	color: #a5b4fc;
+}
+
+/* Condition table — 7-column grid */
+.reports-condition-table .reports-table-header,
+.reports-condition-table .reports-table-row {
+	grid-template-columns: 1.4fr 1fr 1fr 1.6fr 0.8fr 0.8fr 1.4fr;
+}
+
+.reports-condition-row {
+	align-items: start;
+}
+
+.reports-description-cell {
+	white-space: normal;
+	word-break: break-word;
+	font-size: 12px;
+	color: #94a3b8;
+}
+
+/* Condition status badges */
+.condition-badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	white-space: nowrap;
+}
+
+.condition-badge--open {
+	background: rgba(251,191,36,0.15);
+	color: #fde68a;
+}
+
+.condition-badge--progress {
+	background: rgba(59,130,246,0.15);
+	color: #93c5fd;
+}
+
+.condition-badge--resolved {
+	background: rgba(74,222,128,0.15);
+	color: #86efac;
+}
+
+/* Inline edit controls */
+.reports-condition-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.reports-condition-notes-input {
+	background: rgba(255,255,255,0.04);
+	border: 1px solid rgba(148,163,184,0.2);
+	border-radius: 7px;
+	padding: 5px 8px;
+	font-size: 12px;
+	color: #e5e7eb;
+	outline: none;
+	width: 100%;
+	font-family: inherit;
+}
+
+.reports-condition-notes-input:focus {
+	border-color: rgba(99,102,241,0.4);
+}
+
+.reports-condition-select {
+	background: rgba(255,255,255,0.04);
+	border: 1px solid rgba(148,163,184,0.2);
+	border-radius: 7px;
+	padding: 4px 8px;
+	font-size: 12px;
+	color: #e5e7eb;
+	outline: none;
+	cursor: pointer;
+}
+
+.reports-condition-save-btn,
+.reports-condition-cancel-btn,
+.reports-condition-edit-btn {
+	padding: 5px 12px;
+	border-radius: 7px;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	border: 1px solid transparent;
+	transition: background 0.15s;
+}
+
+.reports-condition-edit-btn {
+	background: rgba(99,102,241,0.15);
+	color: #a5b4fc;
+	border-color: rgba(99,102,241,0.25);
+}
+
+.reports-condition-edit-btn:hover {
+	background: rgba(99,102,241,0.25);
+}
+
+.reports-condition-save-btn {
+	background: rgba(74,222,128,0.15);
+	color: #86efac;
+	border-color: rgba(74,222,128,0.25);
+}
+
+.reports-condition-save-btn:hover {
+	background: rgba(74,222,128,0.25);
+}
+
+.reports-condition-cancel-btn {
+	background: rgba(255,255,255,0.04);
+	color: #94a3b8;
+	border-color: rgba(148,163,184,0.14);
+}
+
+.reports-condition-cancel-btn:hover {
+	background: rgba(255,255,255,0.08);
+}
+
+/* Pagination row */
+.reports-pagination {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 16px;
+	font-size: 13px;
+	color: #94a3b8;
+}
+
+.reports-back-button:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+	transform: none;
+}
