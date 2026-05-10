@@ -267,3 +267,4 @@ The backend includes a dev seed endpoint that creates sample users and assets if
 3. Open `http://localhost:3000` in your browser.
 4. Register a new account or use the dev seed endpoint to create sample users.
 5. Use the sidebar to navigate Dashboard, Assets, Allocation, Users, Reports, and Notifications.
+
