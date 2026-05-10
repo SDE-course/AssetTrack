@@ -6,25 +6,45 @@ function Notifications({onNavigate}) {
 	const [notifications, setNotifications] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [page, setPage] = useState(0);
+	const [size, setSize] = useState(10);
+	const [totalPages, setTotalPages] = useState(1);
+	const [totalElements, setTotalElements] = useState(0);
 
 	const filters = [
 		{ key: 'all', label: 'All' },
-		{ key: 'critical', label: 'Critical' },
+		{ key: 'warranty', label: 'Warranty' },
+		{ key: 'low-stock', label: 'Low Stock' },
 		{ key: 'assignment', label: 'Assignment' },
-		{ key: 'warning', label: 'Warning' },
-		{ key: 'success', label: 'Success' },
-		{ key: 'info', label: 'Info' },
 	];
 
 	useEffect(() => {
 		async function loadNotifications() {
 			try {
-				const res = await fetch('/api/notifications');
+				const token = localStorage.getItem('token');
+				const res = await fetch(`/api/notifications?page=${page}&size=${size}`, {
+					headers: {
+						Authorization: token ? `Bearer ${token}` : undefined,
+					},
+				});
 				if (!res.ok) {
 					throw new Error('Failed to load notifications');
 				}
 				const data = await res.json();
-				setNotifications(Array.isArray(data) ? data : []);
+				const rows = Array.isArray(data)
+					? data
+					: Array.isArray(data?.content)
+						? data.content
+						: [];
+				setNotifications(rows);
+
+				if (Array.isArray(data)) {
+					setTotalElements(rows.length);
+					setTotalPages(1);
+				} else {
+					setTotalElements(Number(data?.totalElements ?? rows.length));
+					setTotalPages(Math.max(1, Number(data?.totalPages ?? 1)));
+				}
 			} catch (e) {
 				setError(e.message || 'Error');
 			} finally {
@@ -33,7 +53,7 @@ function Notifications({onNavigate}) {
 		}
 
 		loadNotifications();
-	}, []);
+	}, [page, size]);
 
 	const filteredNotifications = useMemo(() => {
 		if (activeFilter === 'all') {
@@ -43,17 +63,41 @@ function Notifications({onNavigate}) {
 	}, [activeFilter, notifications]);
 
 	const unreadCount = notifications.filter((notification) => notification.unread).length;
-	const criticalCount = notifications.filter((notification) => notification.category === 'critical').length;
-	const assignmentCount = notifications.filter((notification) => notification.category === 'assignment').length;
+	const warrantyCount = notifications.filter((notification) => notification.category === 'warranty').length;
+	const lowStockCount = notifications.filter((notification) => notification.category === 'low-stock').length;
 
 	async function markAllAsRead() {
-		await fetch('/api/notifications/mark-all-read', { method: 'POST' });
+		const token = localStorage.getItem('token');
+		await fetch('/api/notifications/mark-all-read', { 
+			method: 'POST',
+			headers: { Authorization: token ? `Bearer ${token}` : undefined }
+		});
 		setNotifications((current) => current.map((notification) => ({ ...notification, unread: false })));
 	}
 
 	async function markRead(id) {
-		await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+		const token = localStorage.getItem('token');
+		await fetch(`/api/notifications/${id}/read`, { 
+			method: 'POST',
+			headers: { Authorization: token ? `Bearer ${token}` : undefined }
+		});
 		setNotifications((current) => current.map((notification) => (notification.id === id ? { ...notification, unread: false } : notification)));
+	}
+
+	async function deleteNotification(id) {
+		const token = localStorage.getItem('token');
+		try {
+			const res = await fetch(`/api/notifications/${id}`, {
+				method: 'DELETE',
+				headers: { Authorization: token ? `Bearer ${token}` : undefined }
+			});
+			if (!res.ok) throw new Error('Failed to delete notification');
+			setNotifications((current) => current.filter((n) => n.id !== id));
+			setTotalElements((current) => Math.max(0, current - 1));
+		} catch (e) {
+			console.error(e);
+			alert(e.message || 'Failed to delete notification');
+		}
 	}
 
 	if (loading) {
@@ -82,12 +126,12 @@ function Notifications({onNavigate}) {
 							<strong>{unreadCount}</strong>
 						</div>
 						<div className="notifications-stat-card">
-							<span>Critical</span>
-							<strong>{criticalCount}</strong>
-						</div>
-						<div className="notifications-stat-card">
-							<span>Assignments</span>
-							<strong>{assignmentCount}</strong>
+						<span>Warranty</span>
+						<strong>{warrantyCount}</strong>
+					</div>
+					<div className="notifications-stat-card">
+						<span>Low Stock</span>
+						<strong>{lowStockCount}</strong>
 						</div>
 					</div>
 				</header>
@@ -121,7 +165,7 @@ function Notifications({onNavigate}) {
 					<section className="notifications-list-panel">
 						<div className="notifications-panel-header">
 							<h3>Recent alerts</h3>
-							<span>{filteredNotifications.length} items</span>
+							<span>{totalElements} total</span>
 						</div>
 
 						<div className="notifications-list">
@@ -134,11 +178,13 @@ function Notifications({onNavigate}) {
 										{notification.category === 'critical' && '!'}
 										{notification.category === 'assignment' && 'A'}
 										{notification.category === 'warning' && 'W'}
-										{notification.category === 'success' && '✓'}
-										{notification.category === 'info' && 'i'}
-									</div>
+									{notification.category === 'warranty' && '⏰'}
+									{notification.category === 'low-stock' && '📦'}
+									{notification.category === 'success' && '✓'}
+									{notification.category === 'info' && 'i'}
+								</div>
 
-									<div className="notification-content">
+								<div className="notification-content">
 										<div className="notification-title-row">
 											<h4>{notification.title}</h4>
 											{notification.unread && <span className="notification-dot" />}
@@ -152,7 +198,7 @@ function Notifications({onNavigate}) {
 
 									<div className="notification-actions">
 										<button type="button" onClick={() => markRead(notification.id)}>View</button>
-										<button type="button" onClick={() => markRead(notification.id)}>Dismiss</button>
+										<button type="button" onClick={() => deleteNotification(notification.id)}>Dismiss</button>
 									</div>
 								</article>
 							))}
@@ -160,6 +206,34 @@ function Notifications({onNavigate}) {
 							{filteredNotifications.length === 0 && (
 								<div className="notifications-empty-state">No notifications found.</div>
 							)}
+						</div>
+
+						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, gap: 12, flexWrap: 'wrap' }}>
+							<div style={{ color: '#94a3b8', fontSize: 13 }}>
+								Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+							</div>
+							<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+								<label htmlFor="notifications-page-size" style={{ fontSize: 13, color: '#94a3b8' }}>Rows:</label>
+								<select
+									id="notifications-page-size"
+									value={size}
+									onChange={(e) => {
+										setPage(0);
+										setSize(Number(e.target.value));
+									}}
+								>
+									<option value={5}>5</option>
+									<option value={10}>10</option>
+									<option value={20}>20</option>
+									<option value={50}>50</option>
+								</select>
+								<button type="button" className="notifications-action-button" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+									Prev
+								</button>
+								<button type="button" className="notifications-action-button" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+									Next
+								</button>
+							</div>
 						</div>
 					</section>
 

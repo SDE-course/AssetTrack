@@ -3,6 +3,8 @@ package com.assettrack.allocation.controller;
 import com.assettrack.allocation.config.SecurityConfig;
 import com.assettrack.allocation.dto.*;
 import com.assettrack.allocation.exception.*;
+import com.assettrack.allocation.repository.UserRepository;
+import com.assettrack.allocation.security.JwtService;
 import com.assettrack.allocation.service.AllocationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,8 @@ class AllocationControllerTest {
     @Autowired ObjectMapper objectMapper;
 
     @MockBean AllocationService allocationService;
+    @MockBean UserRepository userRepository;
+    @MockBean JwtService jwtService;
 
     // ── ASSIGN ────────────────────────────────────────────────────────────────
 

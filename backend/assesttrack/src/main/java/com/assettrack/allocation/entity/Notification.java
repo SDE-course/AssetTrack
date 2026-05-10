@@ -13,21 +13,24 @@ import java.time.LocalDateTime;
 @Builder
 public class Notification {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private String title;
+    @Column(nullable = false)
+    private String title;
 
-	@Column(length = 2000)
-	private String message;
+    @Column(length = 2000)
+    private String message;
 
-	private String category; // e.g. critical, assignment, warning, success, info
+    // Values: "warning", "info", "critical", "success"
+    private String category;
 
-	private String assetTag;
+    // For warranty alerts: the asset serial number
+    // For low-stock alerts: "LOW_STOCK:<type>"
+    private String assetTag;
 
-	private LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-	private boolean unread;
+    private boolean unread;
 }

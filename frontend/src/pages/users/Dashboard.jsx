@@ -26,7 +26,15 @@ export default function Dashboard() {
           }
         });
         if (res.status === 401) { window.location.href = '/login'; return; }
-        const data = await res.json();
+        const text = await res.text();
+        let data = null;
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (err) {
+            throw new Error('Invalid JSON response from server');
+          }
+        }
         if (!res.ok) throw new Error(data?.message || 'Failed to load dashboard');
         setStats(data || null);
       } catch (e) {

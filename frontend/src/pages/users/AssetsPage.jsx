@@ -2,7 +2,18 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api from '../../services/api';
 import '../../styles/AssetsPage.css';
 
-const ASSET_TYPES = ['LAPTOP', 'MONITOR', 'ACCESSORY'];
+const ASSET_TYPES = [
+  'LAPTOP',
+  'DESKTOP',
+  'MONITOR',
+  'KEYBOARD',
+  'MOUSE',
+  'PRINTER',
+  'TABLET',
+  'MOBILE',
+  'NETWORK_DEVICE',
+  'OTHER',
+];
 const ASSET_STATUSES = ['AVAILABLE', 'ASSIGNED', 'UNDER_MAINTENANCE', 'DECOMMISSIONED'];
 
 const EMPTY_FORM = {
@@ -35,7 +46,14 @@ function typeIcon(type) {
   switch (type) {
     case 'LAPTOP': return '💻';
     case 'MONITOR': return '🖥️';
-    case 'ACCESSORY': return '🖱️';
+    case 'DESKTOP': return '🖥️';
+    case 'KEYBOARD': return '⌨️';
+    case 'MOUSE': return '🖱️';
+    case 'PRINTER': return '🖨️';
+    case 'TABLET': return '📱';
+    case 'MOBILE': return '📱';
+    case 'NETWORK_DEVICE': return '🔌';
+    case 'OTHER': return '📦';
     default: return '📦';
   }
 }
@@ -64,18 +82,38 @@ export default function AssetsPage() {
   // Detail view
   const [selected, setSelected] = useState(null);
 
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+
   const fetchAssets = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.get('/api/assets');
-      setAssets(res.data || []);
+      const res = await api.get('/api/assets', { params: { page, size } });
+      const payload = res.data;
+      const rows = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.content)
+          ? payload.content
+          : [];
+      setAssets(rows);
+
+      if (Array.isArray(payload)) {
+        setTotalElements(rows.length);
+        setTotalPages(1);
+      } else {
+        setTotalElements(Number(payload?.totalElements ?? rows.length));
+        setTotalPages(Math.max(1, Number(payload?.totalPages ?? 1)));
+      }
     } catch (e) {
       setError(e.message || 'Failed to load assets');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, size]);
 
   useEffect(() => { fetchAssets(); }, [fetchAssets]);
 
@@ -138,7 +176,7 @@ export default function AssetsPage() {
     if (!window.confirm('Delete this asset? This cannot be undone.')) return;
     try {
       await api.delete(`/api/assets/${id}`);
-      setAssets((prev) => prev.filter((a) => a.id !== id));
+      fetchAssets();
       if (selected?.id === id) setSelected(null);
     } catch (e) {
       alert(e.message || 'Failed to delete asset');
@@ -177,7 +215,7 @@ export default function AssetsPage() {
         <div>
           <h1 className="assets-title">Assets</h1>
           <p className="assets-subtitle">
-            {assets.length} assets registered
+            {totalElements} assets registered
           </p>
         </div>
         {canEdit && (
@@ -295,6 +333,36 @@ export default function AssetsPage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {!loading && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ color: '#6b7280', fontSize: 14 }}>
+            Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label htmlFor="assets-page-size" style={{ fontSize: 14, color: '#6b7280' }}>Rows:</label>
+            <select
+              id="assets-page-size"
+              value={size}
+              onChange={(e) => {
+                setPage(0);
+                setSize(Number(e.target.value));
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <button type="button" className="btn-secondary" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+              Prev
+            </button>
+            <button type="button" className="btn-secondary" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+              Next
+            </button>
+          </div>
         </div>
       )}
 

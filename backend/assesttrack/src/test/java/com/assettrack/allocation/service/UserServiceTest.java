@@ -10,16 +10,17 @@ import com.assettrack.allocation.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -29,6 +30,9 @@ class UserServiceTest {
 
     @Mock
     AllocationRepository allocationRepository;
+
+    @Mock
+    PasswordEncoder passwordEncoder;   // <-- add this
 
     @InjectMocks
     UserService userService;
@@ -110,7 +114,8 @@ class UserServiceTest {
                 .build();
 
         when(userRepository.existsByEmail("alice@assettrack.com")).thenReturn(false);
-        when(userRepository.save(org.mockito.ArgumentMatchers.any(User.class))).thenReturn(saved);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword"); // <-- add this
+        when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(saved);
 
         UserDTO.UserResponse response = userService.createUser(req);
 

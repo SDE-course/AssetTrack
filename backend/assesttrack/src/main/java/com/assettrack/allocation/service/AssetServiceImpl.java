@@ -1,5 +1,6 @@
 package com.assettrack.allocation.service;
 
+import com.assettrack.allocation.config.WarrantyNotificationScheduler;
 import com.assettrack.allocation.dto.AssetResponse;
 import com.assettrack.allocation.dto.CreateAssetRequest;
 import com.assettrack.allocation.dto.UpdateAssetRequest;
@@ -10,6 +11,9 @@ import com.assettrack.allocation.exception.BadRequestException;
 import com.assettrack.allocation.exception.ResourceNotFoundException;
 import com.assettrack.allocation.repository.AssetRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,7 @@ public class AssetServiceImpl implements AssetService {
 
     private final AssetRepository assetRepository;
     private final com.assettrack.allocation.repository.AllocationRepository allocationRepository;
+    private final WarrantyNotificationScheduler warrantyScheduler;
 
     @Override
     @Transactional
@@ -38,7 +43,13 @@ public class AssetServiceImpl implements AssetService {
                 .status(AssetStatus.AVAILABLE)
                 .build();
 
-        return toResponse(assetRepository.save(asset));
+        AssetResponse response = toResponse(assetRepository.save(asset));
+        
+        // Trigger immediate warranty and low-stock checks to create notifications if needed
+        warrantyScheduler.checkUpcomingWarrantyExpirations();
+        warrantyScheduler.checkAccessoryStockLevels();
+        
+        return response;
     }
 
     @Override
@@ -47,6 +58,16 @@ public class AssetServiceImpl implements AssetService {
         return assetRepository.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AssetResponse> getAllAssetsPaginated(Pageable pageable) {
+        List<AssetResponse> all = getAllAssets();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), all.size());
+        List<AssetResponse> pageContent = all.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, all.size());
     }
 
     @Override
@@ -86,7 +107,13 @@ public class AssetServiceImpl implements AssetService {
             asset.setWarrantyExpiryDate(request.getWarrantyExpiryDate());
         }
 
-        return toResponse(assetRepository.save(asset));
+        AssetResponse response = toResponse(assetRepository.save(asset));
+        
+        // Trigger immediate warranty and low-stock checks to create notifications if needed
+        warrantyScheduler.checkUpcomingWarrantyExpirations();
+        warrantyScheduler.checkAccessoryStockLevels();
+        
+        return response;
     }
 
     @Override

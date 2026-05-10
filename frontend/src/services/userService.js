@@ -7,7 +7,7 @@ import api from './api'; // axios instance from Member 1
 export const userService = {
 
   // Get all users
-  getAll: () => api.get('/users'),
+  getAll: (params = {}) => api.get('/users', { params }),
 
   // Get single user
   getById: (id) => api.get(`/users/${id}`),

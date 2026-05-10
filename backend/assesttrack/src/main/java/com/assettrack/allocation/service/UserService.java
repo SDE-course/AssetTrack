@@ -8,6 +8,9 @@ import com.assettrack.allocation.exception.ResourceNotFoundException;
 import com.assettrack.allocation.repository.AllocationRepository;
 import com.assettrack.allocation.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +47,14 @@ public class UserService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public Page<UserResponse> getAllUsersPaginated(Pageable pageable) {
+        List<UserResponse> all = getAllUsers();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), all.size());
+        List<UserResponse> pageContent = all.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, all.size());
     }
 
     // ─── Get User By ID ───────────────────────────────────────────────────

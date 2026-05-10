@@ -1,6 +1,6 @@
 // src/pages/users/UsersPage.jsx
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userService } from '../../services/userService';
 import UserDetailsModal from '../../components/users/UserDetailsModal';
 
@@ -17,15 +17,32 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
 
   // Fetch users
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
 
-      const res = await userService.getAll();
+      const res = await userService.getAll({ page, size });
+      const payload = res.data;
+      const rows = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.content)
+          ? payload.content
+          : [];
 
-      setUsers(res.data);
+      setUsers(rows);
+      if (Array.isArray(payload)) {
+        setTotalElements(rows.length);
+        setTotalPages(1);
+      } else {
+        setTotalElements(Number(payload?.totalElements ?? rows.length));
+        setTotalPages(Math.max(1, Number(payload?.totalPages ?? 1)));
+      }
       setError('');
     } catch (err) {
       console.error(err);
@@ -33,11 +50,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   // Change role
   const handleRoleChange = async (userId, newRole) => {
@@ -70,6 +87,7 @@ export default function UsersPage() {
       setUsers(prev =>
         prev.filter(user => user.id !== userId)
       );
+      setTotalElements(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error(err);
       alert('Failed to delete user.');
@@ -100,6 +118,7 @@ export default function UsersPage() {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">
         User Management
       </h1>
+      <p className="text-sm text-gray-500 mb-4">{totalElements} users total</p>
 
       {/* Table */}
       <div className="overflow-x-auto rounded-xl shadow border border-gray-200">
@@ -170,6 +189,43 @@ export default function UsersPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
+        <div>Page {totalPages === 0 ? 0 : page + 1} of {totalPages}</div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="users-page-size">Rows:</label>
+          <select
+            id="users-page-size"
+            className="border rounded px-2 py-1"
+            value={size}
+            onChange={(e) => {
+              setPage(0);
+              setSize(Number(e.target.value));
+            }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+          <button
+            type="button"
+            className="border rounded px-3 py-1 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            Prev
+          </button>
+          <button
+            type="button"
+            className="border rounded px-3 py-1 disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Modal */}
